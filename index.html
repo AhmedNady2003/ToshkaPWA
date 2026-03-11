@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#D4AF37" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Toshka Barber" />
+  <meta name="description" content="توشكا باربر - احجز حلاقك بكل سهولة" />
+
+  <title>Toshka Barber</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       SCREEN: LOGIN
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="screen active" id="screen-login">
+
+    <div class="header">
+      <div class="logo">Toshka <span>Barber</span></div>
+      <button class="lang-btn">English</button>
+    </div>
+
+    <div class="content">
+      <div style="height: 48px"></div>
+      <div class="divider"></div>
+
+      <h1 class="screen-title" id="login-title">مرحباً بعودتك</h1>
+      <p  class="screen-sub"   id="login-sub">سجّل دخولك للمتابعة.</p>
+
+      <!-- Phone -->
+      <div class="input-group">
+        <label class="input-label" id="login-phone-label">رقم الموبايل</label>
+        <div class="input-wrap">
+          <span class="input-prefix">+20</span>
+          <input class="input-field ltr"
+                 id="login-phone"
+                 type="tel"
+                 inputmode="numeric"
+                 maxlength="11"
+                 autocomplete="tel"
+                 placeholder="01x xxxx xxxx" />
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="input-group">
+        <label class="input-label" id="login-pass-label">كلمة المرور</label>
+        <div class="input-wrap">
+          <input class="input-field"
+                 id="login-pass"
+                 type="password"
+                 autocomplete="current-password"
+                 placeholder="••••••••" />
+          <button class="eye-btn" id="login-eye" type="button" aria-label="toggle password">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-box" id="login-error"></div>
+    </div>
+
+    <div class="footer">
+      <button class="btn btn-primary" id="login-btn">
+        <div class="spinner"></div>
+        <span class="btn-text">تسجيل الدخول</span>
+      </button>
+      <div class="account-row">
+        <span id="no-account-txt">ليس لديك حساب؟</span>
+        <a id="go-register">سجّل الآن</a>
+      </div>
+    </div>
+
+  
+ 
+</div><!-- /screen-login -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════════════
+       SCREEN: REGISTER (4 Steps)
+  ════════════════════════════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-register">
+
+    <div class="header">
+      <div class="logo">Toshka <span>Barber</span></div>
+      <button class="lang-btn">English</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress">
+      <div class="progress-line" id="line-0"></div>
+
+      <div class="step-circle active" id="step-1">
+        <span id="step-1-lbl">1</span>
+      </div>
+
+      <div class="progress-line" id="line-1"></div>
+
+      <div class="step-circle" id="step-2">
+        <span id="step-2-lbl">2</span>
+      </div>
+
+      <div class="progress-line" id="line-2"></div>
+
+      <div class="step-circle" id="step-3">
+        <span id="step-3-lbl">3</span>
+      </div>
+
+      <div class="progress-line" id="line-3"></div>
+
+      <div class="step-circle" id="step-4">
+        <span id="step-4-lbl">4</span>
+      </div>
+
+      <div class="progress-line" id="line-4"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── Step 1: Phone ── -->
+      <div class="step-content active" id="step-content-1" data-step="1">
+        <h1 class="screen-title" id="s1-title">رقم الهاتف</h1>
+        <p  class="screen-sub"   id="s1-sub">أدخل رقم هاتفك المصري. سنرسل لك رمز تحقق عبر واتس آب.</p>
+
+        <div class="input-group">
+          <label class="input-label" id="s1-label">رقم الموبايل</label>
+          <div class="input-wrap">
+            <span class="input-prefix">+20</span>
+            <input class="input-field ltr"
+                   id="s1-phone"
+                   type="tel"
+                   inputmode="numeric"
+                   maxlength="11"
+                   autocomplete="tel"
+                   placeholder="01x xxxx xxxx" />
+          </div>
+        </div>
+
+        <div class="error-box" id="reg-error-1"></div>
+      </div>
+
+      <!-- ── Step 2: OTP ── -->
+      <div class="step-content" id="step-content-2">
+        <h1 class="screen-title" id="s2-title">رمز التحقق</h1>
+        <p  class="screen-sub"   id="s2-sub">أدخل الرمز المكوّن من 6 أرقام المرسل إلى واتس آب.</p>
+
+        <!-- 6 OTP boxes -->
+        <div class="otp-grid">
+          <div class="otp-box"><input class="otp-input" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" /></div>
+          <div class="otp-box"><input class="otp-input" type="text" inputmode="numeric" maxlength="1" /></div>
+          <div class="otp-box"><input class="otp-input" type="text" inputmode="numeric" maxlength="1" /></div>
+          <div class="otp-box"><input class="otp-input" type="text" inputmode="numeric" maxlength="1" /></div>
+          <div class="otp-box"><input class="otp-input" type="text" inputmode="numeric" maxlength="1" /></div>
+          <div class="otp-box"><input class="otp-input" type="text" inputmode="numeric" maxlength="1" /></div>
+        </div>
+
+        <div class="resend-row">
+          <span id="s2-no-otp">لم يصلك الرمز؟</span>
+          <button class="resend-btn" id="btn-resend" disabled>إعادة إرسال (45ث)</button>
+        </div>
+
+        <div class="error-box" id="reg-error-2"></div>
+      </div>
+
+      <!-- ── Step 3: Password ── -->
+      <div class="step-content" id="step-content-3">
+        <h1 class="screen-title" id="s3-title">كلمة المرور</h1>
+        <p  class="screen-sub"   id="s3-sub">قم بتعيين كلمة مرور قوية لحماية حسابك.</p>
+
+        <div class="input-group">
+          <label class="input-label" id="s3-p-label">كلمة المرور</label>
+          <div class="input-wrap">
+            <input class="input-field"
+                   id="s3-pass"
+                   type="password"
+                   autocomplete="new-password"
+                   placeholder="••••••••" />
+            <button class="eye-btn" id="s3-eye" type="button" aria-label="toggle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <!-- Strength bar -->
+          <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" id="s3-cp-label">تأكيد كلمة المرور</label>
+          <div class="input-wrap">
+            <input class="input-field"
+                   id="s3-cpass"
+                   type="password"
+                   autocomplete="new-password"
+                   placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div class="error-box" id="reg-error-3"></div>
+      </div>
+
+      <!-- ── Step 4: Profile ── -->
+      <div class="step-content" id="step-content-4">
+        <h1 class="screen-title" id="s4-title">البيانات الشخصية</h1>
+        <p  class="screen-sub"   id="s4-sub">أكمل ملفك الشخصي للبدء في الحجز.</p>
+
+        <!-- Photo upload -->
+        <div class="photo-upload" id="photo-wrap">
+          <input type="file" id="photo-input" accept="image/*" hidden />
+          <img id="photo-preview" style="display:none" alt="profile" />
+          <div class="photo-placeholder">
+            <span class="cam-icon">📷</span>
+            <span id="photo-label">إضافة صورة</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" id="s4-name-lbl">الاسم بالكامل (إجباري)</label>
+          <div class="input-wrap">
+            <input class="input-field"
+                   id="s4-name"
+                   type="text"
+                   autocomplete="name"
+                   placeholder="أدخل اسمك" />
+          </div>
+        </div>
+
+        <div class="error-box" id="reg-error-4"></div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- Footer buttons (step-specific) -->
+    <div class="footer">
+
+      <!-- Step 1 -->
+      <button class="btn btn-primary"  id="btn-send"   style="display:none">
+        <div class="spinner"></div><span class="btn-text">إرسال الرمز</span>
+      </button>
+
+      <!-- Step 2 -->
+      <button class="btn btn-primary"  id="btn-verify" style="display:none">
+        <div class="spinner"></div><span class="btn-text">تأكيد الرمز</span>
+      </button>
+
+      <!-- Step 3 -->
+      <button class="btn btn-primary"  id="btn-pass"   style="display:none">
+        <div class="spinner"></div><span class="btn-text">المتابعة</span>
+      </button>
+
+      <!-- Step 4 -->
+      <button class="btn btn-primary"  id="btn-create" style="display:none">
+        <div class="spinner"></div><span class="btn-text">إنشاء الحساب</span>
+      </button>
+      <button class="btn btn-outline"  id="btn-skip"   style="display:none">
+        <div class="spinner"></div><span class="btn-text">تخطي الصورة</span>
+      </button>
+
+      <div class="account-row">
+        <span id="have-account-txt">لديك حساب بالفعل؟</span>
+        <a id="go-login">تسجيل الدخول</a>
+      </div>
+    </div>
+
+  </div><!-- /screen-register -->
+
+</div><!-- /#app -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+
+<!-- Override render to show correct footer buttons per step -->
+<script>
+  const _origRender = render;
+  // Patch goToStep to show correct buttons
+  const _origGoToStep = goToStep;
+
+  function showStepButtons(step) {
+    const btns = {
+      1: ['btn-send'],
+      2: ['btn-verify'],
+      3: ['btn-pass'],
+      4: ['btn-create', 'btn-skip'],
+    };
+    ['btn-send','btn-verify','btn-pass','btn-create','btn-skip'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    (btns[step] || []).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'flex';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Patch render to also manage buttons
+    const origRender = window.render;
+    window.render = function() {
+      origRender();
+      if (state.screen === 'register') showStepButtons(state.step);
+      else ['btn-send','btn-verify','btn-pass','btn-create','btn-skip']
+        .forEach(id => { const el=$(id); if(el) el.style.display='none'; });
+    };
+
+    // Fix duplicate error-box IDs — use the visible one
+    // (Step content only one is active, so only one reg-error visible)
+  });
+</script>
+
+</body>
+</html>

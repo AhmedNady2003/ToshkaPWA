@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#D4AF37"/>
+<title>Toshka — الحلاق</title>
+<link rel="stylesheet" href="../css/app.css"/>
+<!-- SignalR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════ DASHBOARD ══════════════════════════ -->
+<div class="screen active" id="s-dash">
+  <div class="topnav">
+    <div>
+      <div class="logo">Toshka <span>Salon</span></div>
+      <div class="topnav-sub" id="b-greet">أهلاً ✂️</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <!-- Real-time indicator -->
+      <div class="rt-dot" id="rt-dot" title="الاتصال المباشر"></div>
+      <button class="nav-btn" onclick="showScreen('s-profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="scroll-area"><div class="pad">
+
+    <!-- حالة الحلاق -->
+    <div class="status-row" id="status-row">
+      <button class="stbtn s0" data-v="0" onclick="handleStatus(this)">🟢 متاح</button>
+      <button class="stbtn"    data-v="1" onclick="handleStatus(this)">🟡 مشغول</button>
+      <button class="stbtn"    data-v="2" onclick="handleStatus(this)">🔴 استراحة</button>
+    </div>
+
+    <!-- ملخص الصف -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+      <div class="stat-pill"><div class="stat-pill-num" id="cnt-wait">—</div><div class="stat-pill-lbl">انتظار</div></div>
+      <div class="stat-pill"><div class="stat-pill-num" id="cnt-vip">—</div><div class="stat-pill-lbl">VIP</div></div>
+      <div class="stat-pill"><div class="stat-pill-num" id="cnt-done">—</div><div class="stat-pill-lbl">خُدِّموا</div></div>
+    </div>
+
+    <!-- بطاقة يُخدَّم الآن -->
+    <div class="serving-card" id="serving-card">
+      <div class="serving-lbl">✂️ يُخدَّم الآن</div>
+      <div id="serving-body">
+        <div style="color:var(--gray);font-size:14px">لا يوجد عميل يُخدَّم حالياً</div>
+      </div>
+    </div>
+
+    <!-- زر استدعاء التالي -->
+    <button class="serve-btn" id="serve-btn" onclick="handleServeNext()">
+      <div class="sp"></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-txt"><polyline points="9 18 15 12 9 6"/></svg>
+      <span class="btn-txt">استدعِ التالي</span>
+    </button>
+
+    <!-- قائمة الانتظار -->
+    <div class="sec-head">
+      <span class="sec-title">قائمة الانتظار</span>
+      <span class="sec-link" onclick="loadQueue()">⟳ تحديث</span>
+    </div>
+    <div class="card" id="queue-card" style="padding:6px 14px">
+      <div id="queue-body">
+        <div class="empty" style="padding:20px 0"><div class="empty-icon">🎉</div><div class="empty-txt">الصف فاضي</div></div>
+      </div>
+    </div>
+
+  </div></div>
+
+  <div class="tabbar">
+    <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>الصف</span></div>
+    <div class="tab-item" onclick="showScreen('s-ratings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>التقييمات</span></div>
+    <div class="tab-item" onclick="showScreen('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>حسابي</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ RATINGS ══════════════════════════ -->
+<div class="screen" id="s-ratings">
+  <div class="topnav">
+    <div class="logo">Toshka <span>Barber</span></div>
+    <div style="text-align:start">
+      <div style="font-size:24px;font-weight:900;color:var(--gold)" id="avg-r">—</div>
+      <div style="font-size:11px;color:var(--gray)" id="total-r">— تقييم</div>
+    </div>
+  </div>
+  <div class="scroll-area"><div class="pad">
+    <div class="card" style="margin-bottom:14px" id="stars-dist">
+      <div class="empty" style="padding:20px 0"><div class="empty-txt">جاري التحميل...</div></div>
+    </div>
+    <div id="reviews-list"></div>
+  </div></div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="showScreen('s-dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>الصف</span></div>
+    <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>التقييمات</span></div>
+    <div class="tab-item" onclick="showScreen('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>حسابي</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ PROFILE ══════════════════════════ -->
+<div class="screen" id="s-profile">
+  <div class="topnav">
+    <div class="logo">Toshka <span>Barber</span></div>
+    <button class="nav-btn" onclick="handleLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+  <div class="scroll-area"><div class="pad">
+    <div style="text-align:center;padding:10px 0 24px">
+      <div class="av-big" style="margin:0 auto 10px;font-size:30px">✂️</div>
+      <h2 id="p-name-disp" style="font-size:18px;font-weight:700;margin-bottom:3px">—</h2>
+      <div style="font-size:12px;color:var(--gold)">✂️ حلاق</div>
+    </div>
+
+    <!-- بيانات القراءة فقط — التعديل من حساب الحلاق نفسه -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="sec-title" style="margin-bottom:14px">بياناتي</div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="info-body"><div class="info-lbl">الاسم</div><div class="info-val" id="p-inf-name">—</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1 19.79 19.79 0 0 1 1.61 4.5 2 2 0 0 1 3.6 2.34h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.61 17.1z"/></svg></div>
+        <div class="info-body"><div class="info-lbl">الهاتف</div><div class="info-val" id="p-inf-phone" style="direction:ltr;text-align:right">—</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,4 12,13 2,4"/></svg></div>
+        <div class="info-body"><div class="info-lbl">البريد</div><div class="info-val" id="p-inf-email" style="direction:ltr;text-align:right">—</div></div>
+      </div>
+    </div>
+
+    <!-- تغيير الحالة -->
+    <div class="card" style="margin-bottom:12px">
+      <div class="sec-title" style="margin-bottom:14px">حالة العمل</div>
+      <div class="status-row" id="profile-status-row">
+        <button class="stbtn s0" data-v="0" onclick="handleStatusProfile(this)">🟢 متاح</button>
+        <button class="stbtn"    data-v="1" onclick="handleStatusProfile(this)">🟡 مشغول</button>
+        <button class="stbtn"    data-v="2" onclick="handleStatusProfile(this)">🔴 استراحة</button>
+      </div>
+      <div class="banner b-ok" id="status-ok"></div>
+    </div>
+
+    <button class="btn btn-danger" onclick="handleLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span class="btn-txt">تسجيل الخروج</span>
+    </button>
+  </div></div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="showScreen('s-dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>الصف</span></div>
+    <div class="tab-item" onclick="showScreen('s-ratings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>التقييمات</span></div>
+    <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>حسابي</span></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<script src="../js/api.js"></script>
+<script>
+'use strict';
+const S = Session.get();
+const hub = new QueueSignalR();
+
+let queueEntries = [];
+let serveTimer = null, secs = 0;
+let servingEntry = null;
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function toast(m, d=2800) { const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d); }
+function banner(id,m,type='err'){const e=$(id);if(!e)return;e.className=`banner b-${type}`;e.textContent=m;e.classList.toggle('show',!!m);}
+function setLoad(id,on){const b=$(id);if(!b)return;b.classList.toggle('loading',on);b.disabled=on;}
+function setRtDot(ok){$('rt-dot').style.background=ok?'var(--green)':'var(--orange)';}
+
+// ── Screen nav ─────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id)?.classList.add('active');
+  if (id==='s-ratings') loadRatings();
+  if (id==='s-profile') loadProfile();
+}
+
+// ── Status ── PATCH /api/BarberAccount/me/status ───────────────────────────────
+async function handleStatus(btn) {
+  const val = +btn.dataset.v;
+  setStatusUI(val, 'status-row');
+  const res = await ToshkaAPI.BarberAccount.setStatus(val);
+  if (!res?.success) toast('⚠️ فشل تحديث الحالة');
+  else { toast(['🟢 متاح الآن','🟡 مشغول','🔴 استراحة'][val]); setStatusUI(val,'profile-status-row'); }
+}
+async function handleStatusProfile(btn) {
+  const val = +btn.dataset.v;
+  setStatusUI(val,'profile-status-row');
+  const res = await ToshkaAPI.BarberAccount.setStatus(val);
+  if (res?.success) { toast(['🟢 متاح الآن','🟡 مشغول','🔴 استراحة'][val]); banner('status-ok','✅ تم تحديث الحالة','ok'); setStatusUI(val,'status-row'); }
+}
+function setStatusUI(val, rowId) {
+  document.querySelectorAll(`#${rowId} .stbtn`).forEach((b,i)=>{b.className='stbtn';if(i===val)b.classList.add(`s${val}`);});
+}
+
+// ── Queue ── GET /api/Queue/queue-entries ──────────────────────────────────────
+async function loadQueue() {
+
+  const res = await ToshkaAPI.Queue.getEntries();
+
+  if (res?.success && res.data) {
+
+    const d = res.data;
+
+    queueEntries = [
+      ...(d.currentServing ? [d.currentServing] : []),
+      ...(d.waitingVip ?? []),
+      ...(d.waitingNormal ?? [])
+    ];
+
+    renderQueue();
+  }
+  else {
+    console.error("queue load failed", res);
+  }
+}
+
+function renderQueue() {
+  // Categorize
+  const inService = queueEntries.filter(e=>e.status===1||e.status==='InProgress');
+  const waiting   = queueEntries.filter(e=>e.status===0||e.status==='Waiting');
+  const done      = queueEntries.filter(e=>e.status===2||e.status==='Done'||e.status==='Served');
+  const vipCnt    = waiting.filter(e=>e.bookingType===1||e.bookingType===BookingType.Vip).length;
+  
+  $('cnt-wait').textContent = waiting.length;
+  $('cnt-vip').textContent  = vipCnt;
+  $('cnt-done').textContent = done.length;
+  $('serve-btn').disabled   = waiting.length === 0 && inService.length > 0;
+
+  // Serving card
+  const cur = inService[0] ?? null;
+  servingEntry = cur;
+
+  if (cur) {
+
+    startTimer();
+
+    const isVip = cur.bookingType===1 || cur.bookingType===BookingType.Vip;
+    const phone = cur.customerPhone ?? cur.phoneNumber ?? '';
+
+    const imgc = (cur.profileImage && cur.profileImage !== "string")
+      ? cur.profileImage
+      : "assets/images/default-user.png";
+
+    $('serving-body').innerHTML = `
+    
+      <div class="q-info" style="margin-bottom:10px">
+
+        <img 
+          src="${imgc}" 
+          class="q-avatar"
+          alt="profile"
+        />
+
+        <div class="q-text">
+          <div class="serving-name">${cur.userName ?? 'عميل'}</div>
+          ${phone ? `<div class="q-phone" style="direction:ltr;text-align:right">${phone}</div>` : ''}
+        </div>
+
+        ${isVip ? `<span class="q-type vip">⭐ VIP</span>` : `<span class="q-type">عادي</span>`}
+
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+
+        <div class="serving-timer" id="serve-timer">00:00</div>
+
+        <div class="act-btns">
+
+          ${phone ? `
+          <a href="tel:${phone}" class="act-btn call" title="اتصال">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1 19.79 19.79 0 0 1 1.61 4.5 2 2 0 0 1 3.6 2.34h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.61 17.1z"/>
+            </svg>
+          </a>
+          ` : ''}
+
+          <button class="act-btn move-back" title="ترحيل" onclick="handleMoveBack('${cur.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+          </button>
+
+          <button class="btn btn-green" style="height:36px;padding:0 14px;font-size:13px"
+            onclick="handleMarkDone('${cur.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              style="width:14px;height:14px">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span class="btn-txt">تم</span>
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  }
+  else {
+
+    stopTimer();
+
+    $('serving-body').innerHTML =
+    '<div style="color:var(--gray);font-size:14px">لا يوجد عميل يُخدَّم حالياً</div>';
+
+  }
+
+  if (!waiting.length) {
+    $('queue-body').innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-icon">🎉</div><div class="empty-txt">الصف فاضي</div></div>';
+    return;
+  }
+
+  $('queue-body').innerHTML = waiting.map((e,i) => {
+    const isVip  = e.bookingType===1||e.bookingType===BookingType.Vip;
+    const phone  = e.customerPhone ?? e.phoneNumber ?? '';
+    const img = (e.profileImage && e.profileImage !== "string")
+  ? e.profileImage
+  : "assets/images/default-user.png";
+    return `
+    <div class="q-item" id="qi-${e.id}">
+        <div class="q-badge${isVip?' vip':''}">${e.position??i+1}</div>
+
+        <div class="q-info">
+          
+          <!-- صورة العميل -->
+          <img 
+            src="${img}" 
+            class="q-avatar"
+            alt="profile"
+          />
+
+          <div class="q-text">
+            <div class="q-name">${e.userName ?? 'عميل'}</div>
+            ${phone?`<div class="q-phone" style="direction:ltr;text-align:right">${phone}</div>`:''}
+          </div>
+
+        </div>
+
+        ${isVip?`<span class="q-type vip">⭐ VIP</span>`:`<span class="q-type">عادي</span>`}
+
+        <div class="act-btns">
+          ${phone?`<a href="tel:${phone}" class="act-btn call" title="اتصال">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.1 19.79 19.79 0 0 1 1.61 4.5 2 2 0 0 1 3.6 2.34h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.09 6.09l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.61 17.1z"/>
+            </svg>
+          </a>`:''}
+
+          <button class="act-btn serve" title="بدء الخدمة" onclick="handleAddToService('${e.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 8 16 12 12 16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </button>
+
+          <button class="act-btn move-back" title="تأجيل" onclick="handleMoveBack('${e.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+          </button>
+        </div>
+  </div>`;
+  }).join('');
+}
+
+// ── Queue actions ──────────────────────────────────────────────────────────────
+async function handleServeNext() {
+  setLoad('serve-btn', true);
+  const res = await ToshkaAPI.Queue.serveNext();
+  setLoad('serve-btn', false);
+  if (res?.success) { toast('✅ تم استدعاء التالي'); await loadQueue(); }
+  else toast('⚠️ ' + mapError(res));
+}
+
+async function handleAddToService(entryId) {
+  const res = await ToshkaAPI.Queue.addToService(entryId);
+  if (res?.success) { toast('✅ تمت إضافته للخدمة'); await loadQueue(); }
+  else toast('⚠️ ' + mapError(res));
+}
+
+async function handleMarkDone(entryId) {
+  const res = await ToshkaAPI.Queue.markDone(entryId);
+  if (res?.success) { toast('✅ تمت الخدمة'); await loadQueue(); }
+  else toast('⚠️ ' + mapError(res));
+}
+
+async function handleMoveBack(entryId) {
+  const res = await ToshkaAPI.Queue.moveBack(entryId);
+  if (res?.success) { toast('⟳ تم تأجيل العميل'); await loadQueue(); }
+  else toast('⚠️ ' + mapError(res));
+}
+
+// ── Timer ──────────────────────────────────────────────────────────────────────
+function startTimer() {
+  secs = 0; stopTimer();
+  serveTimer = setInterval(() => {
+    secs++;
+    const el = $('serve-timer'); if(!el) return;
+    el.textContent = `${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;
+  }, 1000);
+}
+function stopTimer() { clearInterval(serveTimer); serveTimer = null; }
+
+// ── Ratings ── GET /api/Ratings/barber/{id} ────────────────────────────────────
+async function loadRatings() {
+  const bid = S.barberId;
+  if (!bid) return;
+  const res = await ToshkaAPI.Ratings.getBarber(bid);
+  if (!res?.success) return;
+  const ratings = Array.isArray(res.data) ? res.data : (res.data?.items ?? []);
+  const avg = ratings.length ? (ratings.reduce((s,r)=>s+r.stars,0)/ratings.length).toFixed(1) : '0';
+  $('avg-r').textContent   = avg;
+  $('total-r').textContent = `${ratings.length} تقييم`;
+
+  const dist = [0,0,0,0,0];
+  ratings.forEach(r=>{ if(r.stars>=1&&r.stars<=5) dist[r.stars-1]++; });
+  const total = ratings.length || 1;
+  $('stars-dist').innerHTML = [5,4,3,2,1].map(s=>`
+    <div class="bar-row">
+      <span style="width:14px;font-size:12px;color:var(--gray)">${s}</span>
+      <span style="font-size:12px">⭐</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((dist[s-1]/total)*100)}%"></div></div>
+      <span style="width:24px;font-size:11px;color:var(--gray);text-align:start">${dist[s-1]}</span>
+    </div>`).join('');
+  $('reviews-list').innerHTML = ratings.length ? ratings.slice(0,30).map(r=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:14px;font-weight:700">${r.customerName??'عميل'}</span>
+        <span style="font-size:11px;color:var(--gray)">${r.createdAt?new Date(r.createdAt).toLocaleDateString('ar-EG'):''}</span>
+      </div>
+      <div style="color:var(--gold);font-size:14px;margin-bottom:4px">${'⭐'.repeat(r.stars)}</div>
+      <div style="font-size:13px;color:var(--gray)">${r.comment||''}</div>
+    </div>`).join('') : '<div class="empty"><div class="empty-icon">⭐</div><div class="empty-txt">لا يوجد تقييمات بعد</div></div>';
+}
+
+// ── Profile ── GET /api/BarberAccount/me ───────────────────────────────────────
+async function loadProfile() {
+  const res = await ToshkaAPI.BarberAccount.getMe();
+  if (res?.success && res.data) {
+    const d = res.data;
+    $('p-name-disp').textContent = d.fullName ?? S.name;
+    $('p-inf-name').textContent  = d.fullName ?? '—';
+    $('p-inf-phone').textContent = d.phoneNumber ?? S.phone;
+    $('p-inf-email').textContent = d.email ?? '—';
+    $('b-greet').textContent     = `أهلاً، ${d.fullName ?? S.name} ✂️`;
+  }
+}
+
+function handleLogout() {
+  if (!confirm('تأكيد تسجيل الخروج؟')) return;
+  hub.disconnect(); stopTimer(); Session.clear(); window.location.href='../index.html';
+}
+
+// ── SignalR init ───────────────────────────────────────────────────────────────
+async function initSignalR() {
+  hub
+    .on('QueueUpdated', () => { loadQueue(); })
+    .on('reconnected',  () => { setRtDot(true); hub.joinBarberGroup(S.barberId); loadQueue(); });
+  await hub.connect();
+  setRtDot(true);
+  if (S.barberId) await hub.joinBarberGroup(S.barberId);
+  else setRtDot(false);
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+$('b-greet').textContent = `أهلاً، ${S.name} ✂️`;
+loadQueue();
+initSignalR().catch(() => setRtDot(false));
+
+// Auto-refresh every 30s as fallback
+setInterval(() => { if(document.visibilityState==='visible') loadQueue(); }, 30000);
+</script>
+</body>
+</html>

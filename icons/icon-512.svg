@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#0A0A0A"/>
+  <rect x="6" y="6" width="180" height="180" rx="36" fill="#121212"/>
+  <text x="96" y="75" font-family="Georgia,serif" font-size="20" font-weight="bold" fill="#D4AF37" text-anchor="middle" font-style="italic">Toshka</text>
+  <text x="96" y="105" font-family="Georgia,serif" font-size="18" fill="#888" text-anchor="middle">Barber</text>
+  <line x1="55" y1="130" x2="137" y2="130" stroke="#D4AF37" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="96" cy="155" r="8" fill="none" stroke="#D4AF37" stroke-width="2"/>
+  <line x1="84" y1="148" x2="108" y2="162" stroke="#D4AF37" stroke-width="2"/>
+  <line x1="108" y1="148" x2="84" y2="162" stroke="#D4AF37" stroke-width="2"/>
+</svg>

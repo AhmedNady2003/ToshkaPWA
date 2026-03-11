@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#D4AF37"/>
+<title>Toshka — الإدارة</title>
+<link rel="stylesheet" href="../css/app.css"/>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════ DASHBOARD ══════════════════════════ -->
+<div class="screen active" id="s-dash">
+  <div class="topnav">
+    <div>
+      <div class="logo">Toshka <span>Barber</span></div>
+      <div class="topnav-sub" id="today-lbl">—</div>
+    </div>
+    <button class="nav-btn" onclick="showScreen('s-settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+  <div class="scroll-area"><div class="pad">
+    <div class="stats-grid">
+      <div class="stat-card gold"><div class="stat-num" id="st-active">—</div><div class="stat-lbl">حلاقين نشطين</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-waiting">—</div><div class="stat-lbl">في الانتظار</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-vip">—</div><div class="stat-lbl">VIP</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-avg">—</div><div class="stat-lbl">متوسط التقييم</div></div>
+    </div>
+    <div class="sec-head"><span class="sec-title">مراقبة الصفوف</span><button class="sec-link" onclick="loadDash()">⟳ تحديث</button></div>
+    <div id="monitor-list"></div>
+  </div></div>
+  <div class="tabbar">
+    <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>الرئيسية</span></div>
+    <div class="tab-item" onclick="showScreen('s-barbers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>الحلاقين</span></div>
+    <div class="tab-item" onclick="showScreen('s-reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>التقارير</span></div>
+    <div class="tab-item" onclick="showScreen('s-settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/></svg><span>الإعدادات</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ BARBERS ══════════════════════════ -->
+<div class="screen" id="s-barbers">
+  <div class="topnav">
+    <div style="font-size:16px;font-weight:700">إدارة الحلاقين</div>
+    <button class="nav-btn" style="background:var(--gold);border-color:var(--gold)" onclick="openAddSheet()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </div>
+  <div class="scroll-area"><div class="pad" id="barbers-mgmt">
+    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-txt">جاري التحميل...</div></div>
+  </div></div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="showScreen('s-dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>الرئيسية</span></div>
+    <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>الحلاقين</span></div>
+    <div class="tab-item" onclick="showScreen('s-reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>التقارير</span></div>
+    <div class="tab-item" onclick="showScreen('s-settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/></svg><span>الإعدادات</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ BARBER DELETE ══════════════════════════ -->
+<div class="screen" id="s-barber-del">
+  <div class="topnav">
+    <button class="nav-btn back" onclick="showScreen('s-barbers')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div style="text-align:center;flex:1;font-size:15px;font-weight:700" id="del-b-title">بيانات الحلاق</div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="scroll-area"><div class="pad">
+    <div style="text-align:center;padding:20px 0">
+      <div class="av-big" style="margin:0 auto 12px;font-size:28px">✂️</div>
+      <h2 id="del-b-name" style="font-size:18px;font-weight:700;margin-bottom:4px">—</h2>
+      <div id="del-b-phone" style="font-size:13px;color:var(--gray);direction:ltr">—</div>
+    </div>
+    <div class="card">
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,4 12,13 2,4"/></svg></div>
+        <div class="info-body"><div class="info-lbl">البريد</div><div class="info-val" id="del-b-email" style="direction:ltr;text-align:right">—</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="info-body"><div class="info-lbl">تقييم</div><div class="info-val" id="del-b-rat">—</div></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="info-body"><div class="info-lbl">في الانتظار</div><div class="info-val" id="del-b-wait">—</div></div>
+      </div>
+    </div>
+    <div class="banner b-err" id="del-err"></div>
+    <button class="btn btn-danger" id="btn-del-b" onclick="handleDeleteBarber()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      <span class="btn-txt">حذف الحلاق نهائياً</span>
+    </button>
+  </div></div>
+</div>
+
+<!-- ══════════════════════════ REPORTS ══════════════════════════ -->
+<div class="screen" id="s-reports">
+  <div class="topnav"><div style="font-size:16px;font-weight:700">التقارير</div></div>
+  <div class="scroll-area"><div class="pad">
+    <div class="itabs">
+      <div class="itab active" onclick="switchPeriod(this)">اليوم</div>
+      <div class="itab" onclick="switchPeriod(this)">الأسبوع</div>
+      <div class="itab" onclick="switchPeriod(this)">الشهر</div>
+    </div>
+    <div class="stats-grid" id="rep-kpis"></div>
+    <div class="sec-head"><span class="sec-title">أداء الحلاقين</span></div>
+    <div id="rep-barbers"></div>
+    <div class="sec-head"><span class="sec-title">توزيع نوع الحجز</span></div>
+    <div class="card" id="rep-types"></div>
+  </div></div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="showScreen('s-dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>الرئيسية</span></div>
+    <div class="tab-item" onclick="showScreen('s-barbers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>الحلاقين</span></div>
+    <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>التقارير</span></div>
+    <div class="tab-item" onclick="showScreen('s-settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/></svg><span>الإعدادات</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ SETTINGS ══════════════════════════ -->
+<div class="screen" id="s-settings">
+  <div class="topnav">
+    <div class="logo">Toshka <span>Barber</span></div>
+    <button class="nav-btn" onclick="handleLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+  </div>
+  <div class="scroll-area"><div class="pad">
+    <div style="text-align:center;padding:10px 0 22px">
+      <div class="av-big" style="margin:0 auto 10px;font-size:28px">👑</div>
+      <h2 id="adm-name" style="font-size:17px;font-weight:700;margin-bottom:3px">المدير</h2>
+      <div style="font-size:12px;color:var(--gold)">مدير النظام</div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="sec-title" style="margin-bottom:14px">إعدادات التطبيق</div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="info-body"><div class="info-lbl">السماح بحجوزات VIP</div></div>
+        <button class="toggle on" id="tog-vip" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="info-row">
+        <div class="info-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg></div>
+        <div class="info-body"><div class="info-lbl">إشعارات WhatsApp</div></div>
+        <button class="toggle on" id="tog-wp" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="banner b-ok" id="set-ok"></div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="handleSaveSettings()">
+        <div class="sp"></div><span class="btn-txt">حفظ الإعدادات</span>
+      </button>
+    </div>
+    <button class="btn btn-danger" onclick="handleLogout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span class="btn-txt">تسجيل الخروج</span>
+    </button>
+  </div></div>
+  <div class="tabbar">
+    <div class="tab-item" onclick="showScreen('s-dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>الرئيسية</span></div>
+    <div class="tab-item" onclick="showScreen('s-barbers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>الحلاقين</span></div>
+    <div class="tab-item" onclick="showScreen('s-reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>التقارير</span></div>
+    <div class="tab-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/></svg><span>الإعدادات</span></div>
+  </div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Add Barber Sheet -->
+<div class="sheet-ov" id="add-sheet" onclick="closeAddSheet(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sec-title" style="margin-bottom:18px">إضافة حلاق جديد</div>
+    <div class="form-group"><label class="form-label">الاسم الكامل *</label><input class="form-input" id="add-name" type="text" placeholder="محمد أحمد"/></div>
+    <div class="form-group"><label class="form-label">رقم الهاتف *</label><input class="form-input" id="add-phone" type="tel" placeholder="01x xxxx xxxx"/></div>
+    <div class="form-group"><label class="form-label">البريد الإلكتروني </label><input class="form-input" id="add-email" type="email" placeholder="name@email.com"/></div>
+    <div class="form-group"><label class="form-label">كلمة المرور *</label><input class="form-input" id="add-pass" type="password" placeholder="8 أحرف على الأقل"/></div>
+    <div class="banner b-err" id="add-err"></div>
+    <button class="btn btn-primary" id="btn-add-b" onclick="handleAddBarber()">
+      <div class="sp"></div><span class="btn-txt">إضافة الحلاق</span>
+    </button>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+'use strict';
+const S = Session.get();
+let barbers = [];
+let editBarber = null;
+
+const $ = id => document.getElementById(id);
+function toast(m,d=2800){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+function banner(id,m,type='err'){const e=$(id);if(!e)return;e.className=`banner b-${type}`;e.textContent=m;e.classList.toggle('show',!!m);}
+function setLoad(id,on){const b=$(id);if(!b)return;b.classList.toggle('loading',on);b.disabled=on;}
+
+// ── Nav ────────────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id)?.classList.add('active');
+  if (id==='s-barbers') loadBarbersMgmt();
+  if (id==='s-reports') loadReports();
+  if (id==='s-settings') $('adm-name').textContent = S.name||'المدير';
+}
+
+// ── Dashboard ── GET /api/Barbers ──────────────────────────────────────────────
+async function loadDash() {
+  $('today-lbl').textContent = new Date().toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'});
+  const res = await ToshkaAPI.Barbers.getAll();
+  if (!res?.success || !Array.isArray(res.data)) return;
+  barbers = res.data;
+  const active  = barbers.filter(b=>b.isActive!==false).length;
+  const waiting = barbers.reduce((s,b)=>s+(b.waitingCount??0),0);
+  const vip     = barbers.reduce((s,b)=>s+(b.vipCount??0),0);
+  const ratedBs = barbers.filter(b=>b.averageRating>0);
+  const avgR    = ratedBs.length ? (ratedBs.reduce((s,b)=>s+b.averageRating,0)/ratedBs.length).toFixed(1) : '—';
+  $('st-active').textContent  = active;
+  $('st-waiting').textContent = waiting;
+  $('st-vip').textContent     = vip;
+  $('st-avg').textContent     = avgR;
+
+  $('monitor-list').innerHTML = barbers.map(b => {
+    const stCss = BarberStatus.css[b.status] ?? 'st-break';
+    const stLbl = BarberStatus.label[b.status] ?? '—';
+    const monCls = ['s0','s1','s2'][b.status] ?? 's2';
+    return `<div class="mon-row">
+      <div class="mon-av ${monCls}">${b.profileImageUrl?`<img src="${b.profileImageUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>` :'✂️'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;margin-bottom:3px">${b.name}</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="sbadge ${stCss}">${stLbl}</span>
+          <span style="font-size:12px;color:var(--gray)">⏳ <b style="color:var(--gold)">${b.waitingCount??0}</b></span>
+          <span style="font-size:12px;color:var(--gray)">⭐ ${(b.averageRating??0).toFixed(1)}</span>
+        </div>
+      </div>
+      <button class="nav-btn" title="حذف" style="color:var(--red);border-color:rgba(220,53,69,.3)" onclick='confirmDelBarber(${JSON.stringify({id:b.id,name:b.name,phoneNumber:b.phoneNumber,email:b.email,averageRating:b.averageRating,waitingCount:b.waitingCount})})'>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+// ── Barbers management ─────────────────────────────────────────────────────────
+async function loadBarbersMgmt() {
+  const res = await ToshkaAPI.Barbers.getAll();
+  if (!res?.success || !Array.isArray(res.data)) return;
+  barbers = res.data;
+  $('barbers-mgmt').innerHTML = barbers.map(b=>{
+    const stCss = BarberStatus.css[b.status]??'st-break';
+    const stLbl = BarberStatus.label[b.status]??'—';
+    const monCls= ['s0','s1','s2'][b.status]??'s2';
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;gap:12px;align-items:center;direction:rtl">
+        <div class="mon-av ${monCls}" style="width:50px;height:50px;flex-shrink:0">${b.profileImageUrl?`<img src="${b.profileImageUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:'✂️'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:15px;font-weight:700">${b.name}</span>
+            <span class="sbadge ${stCss}">${stLbl}</span>
+          </div>
+          <div style="font-size:12px;color:var(--gray);margin-bottom:3px;direction:ltr;text-align:right">${b.phoneNumber??''}</div>
+          <div style="font-size:12px;color:var(--gold)">⭐ ${(b.averageRating??0).toFixed(1)} · ${b.totalRatings??0} تقييم · ⏳ ${b.waitingCount??0}</div>
+        </div>
+        <button class="nav-btn" style="color:var(--red);border-color:rgba(220,53,69,.3);flex-shrink:0" onclick='confirmDelBarber(${JSON.stringify({id:b.id,name:b.name,phoneNumber:b.phoneNumber,email:b.email,averageRating:b.averageRating,waitingCount:b.waitingCount})})'>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty"><div class="empty-icon">✂️</div><div class="empty-txt">لا يوجد حلاقين بعد</div></div>';
+}
+
+function confirmDelBarber(b) {
+  editBarber = b;
+  $('del-b-title').textContent = `تفاصيل: ${b.name}`;
+  $('del-b-name').textContent  = b.name;
+  $('del-b-phone').textContent = b.phoneNumber??'—';
+  $('del-b-email').textContent = b.email??'—';
+  $('del-b-rat').textContent   = (b.averageRating??0).toFixed(1);
+  $('del-b-wait').textContent  = b.waitingCount??0;
+  banner('del-err','');
+  showScreen('s-barber-del');
+}
+
+async function handleDeleteBarber() {
+  if (!editBarber?.id) return;
+  if (!confirm(`هل أنت متأكد من حذف الحلاق "${editBarber.name}"؟`)) return;
+  setLoad('btn-del-b',true);
+  const res = await ToshkaAPI.Barbers.delete(editBarber.id);
+  setLoad('btn-del-b',false);
+  if (res?.success) { toast('🗑️ تم حذف الحلاق'); showScreen('s-barbers'); }
+  else banner('del-err', mapError(res));
+}
+
+// ── Add Barber ── POST /api/Barbers ────────────────────────────────────────────
+function openAddSheet()  { $('add-sheet').classList.add('open'); }
+function closeAddSheet(e){ if(e.target===$('add-sheet')) $('add-sheet').classList.remove('open'); }
+
+async function handleAddBarber() {
+  const name  = $('add-name').value.trim();
+  const phone = $('add-phone').value.trim();
+  const email = $('add-email').value.trim();
+  const pass  = $('add-pass').value;
+  if (!name)                     { banner('add-err','الاسم مطلوب'); return; }
+  if (!/^(010|011|012|015)\d{8}$/.test(phone)) { banner('add-err','رقم هاتف مصري غير صحيح'); return; }
+  if (email.includes('@'))      { banner('add-err','بريد إلكتروني غير صحيح'); return; }
+  if (pass.length<8)             { banner('add-err','الباسورد 8 أحرف على الأقل'); return; }
+  setLoad('btn-add-b',true);
+  const res = await ToshkaAPI.Barbers.create({ fullName:name, email, phoneNumber:phone, password:pass, profileImageUrl:null });
+  setLoad('btn-add-b',false);
+  if (res?.success) {
+    $('add-sheet').classList.remove('open');
+    ['add-name','add-phone','add-email','add-pass'].forEach(id=>$(id).value='');
+    banner('add-err','');
+    toast('✅ تم إضافة الحلاق');
+    loadBarbersMgmt(); loadDash();
+  } else banner('add-err', mapError(res));
+}
+
+// ── Reports ── built from GET /api/Barbers ─────────────────────────────────────
+function switchPeriod(tab) {
+  document.querySelectorAll('.itab').forEach(t=>t.classList.remove('active')); tab.classList.add('active'); loadReports();
+}
+async function loadReports() {
+  const res = await ToshkaAPI.Barbers.getAll();
+  if (!res?.success || !Array.isArray(res.data)) return;
+  barbers = res.data;
+  const totalWait = barbers.reduce((s,b)=>s+(b.waitingCount??0),0);
+  const vip       = barbers.reduce((s,b)=>s+(b.vipCount??0),0);
+  const rated     = barbers.filter(b=>b.averageRating>0);
+  const avgR      = rated.length ? (rated.reduce((s,b)=>s+b.averageRating,0)/rated.length).toFixed(1) : '—';
+  $('rep-kpis').innerHTML = `
+    <div class="stat-card gold"><div class="stat-num">${totalWait}</div><div class="stat-lbl">في الانتظار</div></div>
+    <div class="stat-card"><div class="stat-num">${vip}</div><div class="stat-lbl">VIP</div></div>
+    <div class="stat-card"><div class="stat-num">${avgR}</div><div class="stat-lbl">متوسط التقييم</div></div>
+    <div class="stat-card"><div class="stat-num">${barbers.length}</div><div class="stat-lbl">إجمالي الحلاقين</div></div>`;
+  const totalTR = barbers.reduce((s,b)=>s+(b.totalRatings??0),0)||1;
+  $('rep-barbers').innerHTML = barbers.map(b=>{
+    const pct = Math.round(((b.totalRatings??0)/totalTR)*100);
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:7px">
+        <span style="font-weight:700;font-size:14px">${b.name}</span>
+        <span class="sbadge ${BarberStatus.css[b.status]??'st-break'}">${BarberStatus.label[b.status]??'—'}</span>
+      </div>
+      <div class="bar-track" style="margin-bottom:6px"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray)">
+        <span>⭐ ${(b.averageRating??0).toFixed(1)} · ${b.totalRatings??0} تقييم</span>
+        <span>⏳ ${b.waitingCount??0}</span>
+      </div></div>`;
+  }).join('');
+  const norm = totalWait - vip, total = totalWait||1;
+  $('rep-types').innerHTML = `
+    <div class="bar-row"><span style="width:50px;font-size:13px;color:var(--gold)">⭐ VIP</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((vip/total)*100)}%"></div></div>
+      <span style="width:28px;font-size:12px;color:var(--gold);font-weight:700;text-align:start">${vip}</span></div>
+    <div class="bar-row" style="margin-bottom:0"><span style="width:50px;font-size:13px;color:var(--gray)">✂️ عادي</span>
+      <div class="bar-track"><div class="bar-fill gray" style="width:${Math.round((norm/total)*100)}%"></div></div>
+      <span style="width:28px;font-size:12px;color:var(--gray);font-weight:700;text-align:start">${norm}</span></div>`;
+}
+
+function handleSaveSettings() {
+  banner('set-ok','✅ تم حفظ الإعدادات','ok');
+  setTimeout(()=>banner('set-ok','','ok'),3000);
+}
+function handleLogout() {
+  if (!confirm('تأكيد تسجيل الخروج؟')) return;
+  Session.clear(); window.location.href='../index.html';
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+loadDash();
+</script>
+</body>
+</html>
