@@ -3,7 +3,7 @@
  * Swagger v2 + SignalR QueueHub
  */
 
-const API_BASE = 'http://toshka.runasp.net';
+const API_BASE = 'https://toshka.runasp.net';
 
 // ─── Enums ─────────────────────────────────────────────────────────────────────
 const BarberStatus = {
@@ -47,8 +47,8 @@ const Session = {
   }
 };
 
-// ─── http ──────────────────────────────────────────────────────────────────────
-async function http(method, path, body) {
+// ─── https ──────────────────────────────────────────────────────────────────────
+async function https(method, path, body) {
   const h = { 'Content-Type':'application/json' };
   const t = Session.get().token;
   if (t) h['Authorization'] = `Bearer ${t}`;
@@ -63,61 +63,61 @@ async function http(method, path, body) {
 
 // ─── Auth ──────────────────────────────────────────────────────────────────────
 const Auth = {
-  sendOtp:  phone => http('POST', '/api/Auth/send-otp', { phoneNumber:phone }),
-  register: body  => http('POST', '/api/Auth/register', body),
-  login:    body  => http('POST', '/api/Auth/login',    body),
+  sendOtp:  phone => https('POST', '/api/Auth/send-otp', { phoneNumber:phone }),
+  register: body  => https('POST', '/api/Auth/register', body),
+  login:    body  => https('POST', '/api/Auth/login',    body),
 };
 
 // ─── UserAccount ───────────────────────────────────────────────────────────────
 const UserAccount = {
-  create:         body => http('POST',  '/api/UserAccount', body),
-  getMe:          ()   => http('GET',   '/api/UserAccount/me'),
-  updateMe:       body => http('PATCH', '/api/UserAccount/me', body),
-  changePassword: body => http('PATCH', '/api/UserAccount/me/change-password', body),
+  create:         body => https('POST',  '/api/UserAccount', body),
+  getMe:          ()   => https('GET',   '/api/UserAccount/me'),
+  updateMe:       body => https('PATCH', '/api/UserAccount/me', body),
+  changePassword: body => https('PATCH', '/api/UserAccount/me/change-password', body),
 };
 
 // ─── BarberAccount (GET + status only — no PATCH me) ───────────────────────────
 const BarberAccount = {
-  getMe:     ()     => http('GET',   '/api/BarberAccount/me'),
-  setStatus: status => http('PATCH', '/api/BarberAccount/me/status', { status }),
+  getMe:     ()     => https('GET',   '/api/BarberAccount/me'),
+  setStatus: status => https('PATCH', '/api/BarberAccount/me/status', { status }),
 };
 
 // ─── Barbers (admin CRUD) ─────────────────────────────────────────────────────
 const Barbers = {
-  getAll:  ()   => http('GET',    '/api/Barbers'),
-  getById: id   => http('GET',    `/api/Barbers/${id}`),
-  create:  body => http('POST',   '/api/Barbers', body),
-  delete:  id   => http('DELETE', `/api/Barbers/${id}`),
+  getAll:  ()   => https('GET',    '/api/Barbers'),
+  getById: id   => https('GET',    `/api/Barbers/${id}`),
+  create:  body => https('POST',   '/api/Barbers', body),
+  delete:  id   => https('DELETE', `/api/Barbers/${id}`),
 };
 
 // ─── Queue ────────────────────────────────────────────────────────────────────
 const Queue = {
-  book:         body => http('POST', '/api/Queue/book', body),
-  getEntries:   ()   => http('GET',  '/api/Queue/queue-entries'),
-  myPosition:   ()   => http('GET',  '/api/Queue/my-position'),
-  serveNext:    ()   => http('POST', '/api/Queue/barber/serve-next'),          // no barberId
-  cancel:       ()   => http('POST', '/api/Queue/cancel'),                     // no entryId – uses JWT
-  markDone:     id   => http('POST', `/api/Queue/${id}/mark-as-done`),
-  addToService: id   => http('POST', `/api/Queue/${id}/add-to-service`),
-  moveBack:     id   => http('POST', `/api/Queue/${id}/move-back`),
+  book:         body => https('POST', '/api/Queue/book', body),
+  getEntries:   ()   => https('GET',  '/api/Queue/queue-entries'),
+  myPosition:   ()   => https('GET',  '/api/Queue/my-position'),
+  serveNext:    ()   => https('POST', '/api/Queue/barber/serve-next'),          // no barberId
+  cancel:       ()   => https('POST', '/api/Queue/cancel'),                     // no entryId – uses JWT
+  markDone:     id   => https('POST', `/api/Queue/${id}/mark-as-done`),
+  addToService: id   => https('POST', `/api/Queue/${id}/add-to-service`),
+  moveBack:     id   => https('POST', `/api/Queue/${id}/move-back`),
 };
 
 // ─── Ratings ──────────────────────────────────────────────────────────────────
 const Ratings = {
-  create:    body => http('POST', '/api/Ratings', body),
-  getBarber: bid  => http('GET',  `/api/Ratings/barber/${bid}`),
+  create:    body => https('POST', '/api/Ratings', body),
+  getBarber: bid  => https('GET',  `/api/Ratings/barber/${bid}`),
 };
 
 // ─── Notifications ────────────────────────────────────────────────────────────
 const Notifications = {
-  getAll:      (p=1, s=20) => http('GET',   `/api/Notifications?page=${p}&pageSize=${s}`),
-  markAllRead: ()          => http('PATCH',  '/api/Notifications/mark-all-read'),
-  regToken:    body        => http('POST',   '/api/Notifications/device-token', body),
+  getAll:      (p=1, s=20) => https('GET',   `/api/Notifications?page=${p}&pageSize=${s}`),
+  markAllRead: ()          => https('PATCH',  '/api/Notifications/mark-all-read'),
+  regToken:    body        => https('POST',   '/api/Notifications/device-token', body),
 };
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 const Admin = {
-  register: body => http('POST', '/api/Admin/register', body),
+  register: body => https('POST', '/api/Admin/register', body),
 };
 
 // ─── SignalR Hub ──────────────────────────────────────────────────────────────
