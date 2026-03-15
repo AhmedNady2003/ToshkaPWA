@@ -4,14 +4,15 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#D4AF37"/>
+<link rel="manifest" href="../manifest.json"/>
+<link rel="apple-touch-icon" href="../icons/icon-192.svg"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Toshka Barber"/>
 <title>Toshka — العميل</title>
 <link rel="stylesheet" href="../css/app.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <style>
-.welcome-wrap{background:linear-gradient(135deg,#1a1500,#1a1a1a);border:1px solid rgba(212,175,55,.18);
-  border-radius:20px;padding:18px 20px;margin:0 0 18px;display:flex;align-items:center;gap:14px;direction:rtl}
-.welcome-wrap h2{font-size:17px;font-weight:700;margin-bottom:2px}
-.welcome-wrap p{font-size:12px;color:var(--gray)}
 .profile-ring{width:82px;height:82px;border-radius:50%;background:var(--card2);border:2px solid var(--gold);
   display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;
   margin:0 auto 8px;overflow:hidden;position:relative}
@@ -19,6 +20,12 @@
 .notif-card{display:flex;gap:12px;align-items:flex-start;padding:14px;background:var(--card);
   border:1px solid var(--border);border-radius:16px;margin-bottom:10px;direction:rtl}
 .notif-unread{border-color:rgba(212,175,55,.3);background:rgba(212,175,55,.04)}
+/* ── iOS fix: screens يملوا الشاشة كاملة ── */
+.screen{display:none;flex-direction:column;
+  min-height:100dvh;min-height:-webkit-fill-available;
+  animation:fadeUp .28s ease both}
+.screen.active{display:flex;height:100%;max-height:100dvh}
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;overscroll-behavior:contain}
 </style>
 </head>
 <body>
@@ -50,8 +57,6 @@
       </div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gold);flex-shrink:0;transform:scaleX(-1)"><polyline points="15 18 9 12 15 6"/></svg>
     </div>
-
-    
 
     <div class="pad" style="padding-top:0">
       <div class="sec-head">
@@ -133,8 +138,8 @@
     </div>
   </div>
 
-  <!-- نشط -->
-  <div id="q-active" style="flex:1;overflow-y:auto;display:none">
+  <!-- نشط — BUG FIX: div مقفول صح قبل q-rate -->
+  <div id="q-active" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none">
     <div class="pad" style="padding-top:4px">
       <div class="q-hero">
         <div class="q-ring"><div class="q-num" id="my-qnum">—</div></div>
@@ -178,14 +183,15 @@
       </div>
 
       <div class="banner b-err" id="q-err"></div>
-      <button class="btn btn-danger" onclick="handleCancel()">
+      <button class="btn btn-danger" id="btn-cancel" onclick="handleCancel()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
         <span class="btn-txt">إلغاء الحجز</span>
       </button>
-  </div>
+    </div>
+  </div><!-- /q-active ← BUG FIX: كان ناقص هنا -->
 
-  <!-- تقييم -->
-  <div id="q-rate" style="flex:1;overflow-y:auto;display:none">
+  <!-- تقييم — BUG FIX: الآن خارج q-active تماماً -->
+  <div id="q-rate" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none">
     <div class="pad" style="padding-top:40px;text-align:center">
       <div style="font-size:48px;margin-bottom:14px">🎉</div>
       <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">تمت خدمتك!</h2>
@@ -279,7 +285,7 @@
   </div></div>
 </div>
 
-</div>
+</div><!-- /app -->
 <div class="toast" id="toast"></div>
 <script src="../js/api.js"></script>
 <script>
@@ -287,19 +293,26 @@
 const S = Session.get();
 const hub = new QueueSignalR();
 
-let barbers    = [];
-let selType    = 0;   // BookingType int
-let detType    = 0;
-let selBarber  = null;
-let myBooking  = null;
+let barbers     = [];
+let detType     = 0;
+let selBarber   = null;
+let myBooking   = null;
 let ratingEntry = null;
-let selRating  = 0;
+let selRating   = 0;
 
 const $ = id => document.getElementById(id);
 function toast(m,d=2800){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
 function banner(id,m,type='err'){const e=$(id);if(!e)return;e.className=`banner b-${type}`;e.textContent=m;e.classList.toggle('show',!!m);}
 function setLoad(id,on){const b=$(id);if(!b)return;b.classList.toggle('loading',on);b.disabled=on;}
-function setRtDot(ok,id='rt-dot'){$(id)&&($(id).style.background=ok?'var(--green)':'var(--orange)');}
+function setRtDot(ok,id='rt-dot'){const el=$(id);if(!el)return;el.style.background=ok?'var(--green)':'var(--orange)';}
+
+// normalize status → 0=Waiting, 1=InService, 2=Done, 3=Cancelled
+function normSt(s) {
+  if (typeof s === 'number') return s;
+  const m = {waiting:0,pending:0,inprogress:1,serving:1,inservice:1,active:1,
+             done:2,served:2,completed:2,finished:2,cancelled:3,canceled:3};
+  return m[(s??'').toLowerCase().replace(/[\s_-]/g,'')] ?? 0;
+}
 
 // ── Screen nav ─────────────────────────────────────────────────────────────────
 function showScreen(id) {
@@ -311,11 +324,7 @@ function showScreen(id) {
   if (id==='s-notif')   loadNotifs();
 }
 
-// ── Type ───────────────────────────────────────────────────────────────────────
-function selectType(btn) {
-  document.querySelectorAll('#type-row .type-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); selType=+btn.dataset.v;
-}
+// ── Type selector ──────────────────────────────────────────────────────────────
 function selectDetType(btn) {
   document.querySelectorAll('#det-type-row .type-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active'); detType=+btn.dataset.v;
@@ -338,8 +347,8 @@ function renderBarbers() {
     const stLbl = BarberStatus.label[b.status] ?? '—';
     const stars = Math.round(b.averageRating ?? 0);
     return `<div class="card" style="cursor:pointer;margin-bottom:10px" onclick='openBarber(${JSON.stringify({id:b.id,name:b.name,status:b.status,averageRating:b.averageRating,totalRatings:b.totalRatings,waitingCount:b.waitingCount})})'>
-      <div class="b-row" style="display:flex;gap:12px;align-items:center;direction:rtl">
-        <div class="b-avatar" style="width:54px;height:54px;border-radius:50%;background:var(--card2);border:2px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px">
+      <div style="display:flex;gap:12px;align-items:center;direction:rtl">
+        <div style="width:54px;height:54px;border-radius:50%;background:var(--card2);border:2px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px">
           ${b.profileImageUrl?`<img src="${b.profileImageUrl}" style="width:100%;height:100%;object-fit:cover"/>`:'✂️'}
         </div>
         <div style="flex:1;min-width:0">
@@ -363,9 +372,9 @@ function openBarber(b) {
   $('det-b-name').textContent = b.name;
   $('det-name').textContent   = b.name;
   const badge = $('det-badge');
-  badge.className = `sbadge ${BarberStatus.css[b.status]??'st-break'}`;
+  badge.className  = `sbadge ${BarberStatus.css[b.status]??'st-break'}`;
   badge.textContent = BarberStatus.label[b.status]??'—';
-  $('det-stars').textContent = '⭐'.repeat(Math.round(b.averageRating??0));
+  $('det-stars').textContent      = '⭐'.repeat(Math.round(b.averageRating??0));
   $('det-rating-lbl').textContent = `${(b.averageRating??0).toFixed(1)} · ${b.totalRatings??0} تقييم`;
   $('d-wait').textContent = b.waitingCount??0;
   $('d-rat').textContent  = (b.averageRating??0).toFixed(1);
@@ -384,18 +393,12 @@ async function handleBook() {
   setLoad('btn-book', false);
   if (res?.success && res.data) {
     myBooking = res.data;
-    // انضم لـ group الحلاق لاستقبال تحديثات الصف الفورية
-    if (myBooking.barberId || selBarber?.id) {
+    if (myBooking.barberId || selBarber?.id)
       await hub.joinBarberGroup(myBooking.barberId ?? selBarber.id);
-    }
     banner('det-ok', `✅ تم الحجز! رقمك: ${res.data.position??'—'}`, 'ok');
-    $('active-band').style.display='flex';
-    $('band-num').textContent = res.data.position??'—';
-    $('band-sub').textContent = `مع ${selBarber.name}`;
+    updateBookingBand();
     setTimeout(()=>showScreen('s-queue'), 1400);
   } else banner('det-err', mapError(res));
-
-  updateBookingBand();
 }
 
 // ── My Position ── GET /api/Queue/my-position ──────────────────────────────────
@@ -403,17 +406,29 @@ async function checkMyPosition() {
   const res = await ToshkaAPI.Queue.myPosition();
   if (res?.success && res.data) {
     myBooking = res.data;
-    $('active-band').style.display='flex';
-    $('band-num').textContent = res.data.peopleBefore??'—';
-    $('band-sub').textContent = `مع ${res.data.barberName??''} · ${res.data.peopleBefore??0} قبلك`;
     updateBookingBand();
   } else {
     myBooking = null;
-    $('active-band').style.display='none';
     updateBookingBand();
   }
 }
 
+// ── updateBookingBand ──────────────────────────────────────────────────────────
+// BUG FIX: كان بيعمل crash لما !myBooking لأنه بيحاول يوصل band.style بعد check فاشل
+function updateBookingBand() {
+  const band = $('active-band');
+  if (!band) return;
+  if (!myBooking) { band.style.display='none'; return; }
+  band.style.display = 'flex';
+  $('band-num').textContent = myBooking.queueNumber ?? myBooking.position ?? '—';
+  const st = normSt(myBooking.status);
+  $('band-sub').textContent =
+    st === 1 ? '✂️ جاري خدمتك الآن' :
+    st === 2 ? '🎉 تمت الخدمة' :
+    `أنت رقم ${(myBooking.peopleBefore??0)+1} · مع ${myBooking.barberName??''}`;
+}
+
+// ── loadMyQueue ────────────────────────────────────────────────────────────────
 function loadMyQueue() {
   if (!myBooking) {
     $('q-empty').style.display  = 'flex';
@@ -422,140 +437,98 @@ function loadMyQueue() {
     return;
   }
 
-  const st = myBooking.status;
+  const st = normSt(myBooking.status);
 
   // ── Done → شاشة التقييم ──────────────────────────────────────────────────
-  if (st === 2 || st === 'Done' || st === 'Served') {
+  if (st === 2) {
     ratingEntry = myBooking.queueEntryId ?? myBooking.id;
     myBooking   = null;
-    showRating();   // تنقل لـ s-queue + تظهر q-rate + ترسيت النجوم
+    showRating();
     return;
   }
 
-  // ── Active (Waiting / InService) ─────────────────────────────────────────
+  // ── Active ────────────────────────────────────────────────────────────────
   $('q-empty').style.display  = 'none';
   $('q-active').style.display = 'block';
   $('q-rate').style.display   = 'none';
 
-  $('my-qnum').textContent       = myBooking.position ?? ((myBooking.peopleBefore ?? 0) + 1);
-  $('my-barber-txt').textContent = `مع الحلاق: ${myBooking.barberName ?? '—'}`;
+  $('my-qnum').textContent       = myBooking.queueNumber ?? myBooking.position ?? ((myBooking.peopleBefore??0)+1);
+  $('my-barber-txt').textContent = `مع الحلاق: ${myBooking.barberName??'—'}`;
   $('step1-t').textContent       = myBooking.createdAt
-    ? new Date(myBooking.createdAt).toLocaleTimeString('ar-EG', { hour:'2-digit', minute:'2-digit' })
-    : '—';
+    ? new Date(myBooking.createdAt).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) : '—';
 
-  const isServing = st === 1 || st === 'InService' || st === 'Serving';
+  const btnCancel = $('btn-cancel');
 
-  if (isServing) {
-    // ── جاري الخدمة الآن ─────────────────────────────────────────────────
-    $('my-pos-txt').textContent = '✂️ جاري خدمتك الآن';
-
-    // Step 2 → done
-    $('step2-dot').className   = 'step-dot done';
-    $('step2-dot').textContent  = '✓';
+  if (st === 1) {
+    // جاري الخدمة
+    $('my-pos-txt').textContent   = '✂️ جاري خدمتك الآن';
+    $('step2-dot').className      = 'step-dot done';
+    $('step2-dot').textContent    = '✓';
     $('step2-line').classList.add('done');
-    $('step2-sub').textContent  = 'انتهى الانتظار';
-    $('step2-sub').style.color  = 'var(--green)';
-
-    // Step 3 → active (cur)
-    $('step3-dot').className   = 'step-dot cur';
-    $('step3-dot').textContent  = '✂️';
-    $('step3-sub').textContent  = 'يتم خدمتك الآن';
-    $('step3-sub').style.color  = 'var(--gold)';
-
-    // كلا الزرين يظهروا دايماً
-    $('q-action-btns').style.display = 'flex';
-    $('btn-cancel').style.display    = 'none';   // إلغاء مش منطقي أثناء الخدمة
-
+    $('step2-sub').textContent    = 'انتهى الانتظار';
+    $('step2-sub').style.color    = 'var(--green)';
+    $('step3-dot').className      = 'step-dot cur';
+    $('step3-dot').textContent    = '✂️';
+    $('step3-sub').textContent    = 'يتم خدمتك الآن';
+    $('step3-sub').style.color    = 'var(--gold)';
+    if (btnCancel) btnCancel.style.display = 'none';
   } else {
-    // ── في الانتظار ──────────────────────────────────────────────────────
-    $('my-pos-txt').textContent = `أنت رقم ${(myBooking.peopleBefore ?? 0) + 1} في الانتظار`;
-
-    // Step 2 → cur
-    $('step2-dot').className   = 'step-dot cur';
-    $('step2-dot').textContent  = myBooking.peopleBefore > 0 ? String(myBooking.peopleBefore) : '⏳';
+    // في الانتظار
+    $('my-pos-txt').textContent   = `أنت رقم ${(myBooking.peopleBefore??0)+1} في الانتظار`;
+    $('step2-dot').className      = 'step-dot cur';
+    $('step2-dot').textContent    = myBooking.peopleBefore > 0 ? String(myBooking.peopleBefore) : '⏳';
     $('step2-line').classList.remove('done');
-    $('step2-sub').textContent  = `${myBooking.peopleBefore ?? 0} شخص قبلك`;
-    $('step2-sub').style.color  = 'var(--gold)';
-
-    // Step 3 → pending
-    $('step3-dot').className   = 'step-dot';
-    $('step3-dot').textContent  = '✂️';
-    $('step3-sub').textContent  = 'سيتم إشعارك عند دورك';
-    $('step3-sub').style.color  = 'var(--gray)';
-
-    // إظهار كلا الزرين أثناء الانتظار
-    $('btn-cancel').style.display    = '';
-    $('q-action-btns').style.display = 'flex';
+    $('step2-sub').textContent    = `${myBooking.peopleBefore??0} شخص قبلك`;
+    $('step2-sub').style.color    = 'var(--gold)';
+    $('step3-dot').className      = 'step-dot';
+    $('step3-dot').textContent    = '✂️';
+    $('step3-sub').textContent    = 'سيتم إشعارك عند دورك';
+    $('step3-sub').style.color    = 'var(--gray)';
+    if (btnCancel) btnCancel.style.display = '';
   }
 
   updateBookingBand();
 }
 
-function updateBookingBand() {
-  const band = $('active-band');
-  if (!myBooking || !band) { 
-    band.style.display='none'; 
-    return; 
-  }
-
-  band.style.display = 'flex';
-  $('band-num').textContent = myBooking.position ?? '—';
-  $('band-sub').textContent = 
-    myBooking.status === 1 || myBooking.status === 'Serving'
-      ? '✂️ جاري خدمتك الآن'
-      : `أنت رقم ${(myBooking.peopleBefore ?? 0) + 1} في الانتظار`;
-}
-// ── Move Back ── POST /api/Queue/{id}/move-back ────────────────────────────────
-async function handleMoveBack() {
-  const entryId = myBooking?.queueEntryId ?? myBooking?.id;
-  if (!entryId) return;
-  if (!confirm('هل تريد تأجيل دورك لآخر الصف؟')) return;
-  setLoad('btn-moveback', true);
-  banner('q-err', '');
-  const res = await ToshkaAPI.Queue.moveBack(entryId);
-  setLoad('btn-moveback', false);
-  if (res?.success) {
-    toast('⟳ تم تأجيل دورك لآخر الصف');
-    await checkMyPosition();
-    loadMyQueue();
-  } else {
-    banner('q-err', mapError(res));
-  }
-}
-
-// ── Cancel ── POST /api/Queue/cancel ───────────────────────────────────────────
+// ── Cancel ────────────────────────────────────────────────────────────────────
 async function handleCancel() {
   if (!confirm('هل تريد إلغاء الحجز؟')) return;
-  const res = await ToshkaAPI.Queue.cancel();  // no params — JWT identifies booking
+  const res = await ToshkaAPI.Queue.cancel();
   if (res?.success) {
-    // غادر group الحلاق لأن الحجز انتهى
     if (myBooking?.barberId) hub.leaveBarberGroup(myBooking.barberId);
-    myBooking=null; updateBookingBand();$('active-band').style.display='none';
+    myBooking = null;
+    updateBookingBand();
     $('q-empty').style.display='flex'; $('q-active').style.display='none';
     toast('✅ تم إلغاء الحجز');
   } else banner('q-err', mapError(res));
 }
 
-// ── showRating — تفتح شاشة التقييم من أي حالة ────────────────────────────────
-function showRating() {
-  // reset نجوم + تعليق
-  document.querySelectorAll('#rate-stars span').forEach(s => s.style.opacity = '0.3');
-  selRating = 0;
-  const comm = $('rate-comment');
-  if (comm) comm.value = '';
+// ── Move Back ─────────────────────────────────────────────────────────────────
+async function handleMoveBack() {
+  const entryId = myBooking?.queueEntryId ?? myBooking?.id;
+  if (!entryId) return;
+  if (!confirm('هل تريد تأجيل دورك لآخر الصف؟')) return;
+  setLoad('btn-moveback', true);
+  const res = await ToshkaAPI.Queue.moveBack(entryId);
+  setLoad('btn-moveback', false);
+  if (res?.success) { toast('⟳ تم تأجيل دورك'); await checkMyPosition(); loadMyQueue(); }
+  else banner('q-err', mapError(res));
+}
 
-  // إخفاء البانر النشط + إظهار شاشة التقييم
+// ── showRating ────────────────────────────────────────────────────────────────
+function showRating() {
+  document.querySelectorAll('#rate-stars span').forEach(s=>s.style.opacity='0.3');
+  selRating = 0;
+  const comm = $('rate-comment'); if (comm) comm.value='';
   $('active-band').style.display = 'none';
   $('q-empty').style.display     = 'none';
   $('q-active').style.display    = 'none';
   $('q-rate').style.display      = 'block';
-
-  // التأكد إن شاشة s-queue ظاهرة
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $('s-queue').classList.add('active');
 }
 
-// ── Rating ── POST /api/Ratings ────────────────────────────────────────────────
+// ── Rating ────────────────────────────────────────────────────────────────────
 function rateStar(v) {
   selRating=v;
   document.querySelectorAll('#rate-stars span').forEach((s,i)=>s.style.opacity=i<v?'1':'0.3');
@@ -574,7 +547,7 @@ async function handleRate() {
   } else toast('⚠️ '+mapError(res));
 }
 
-// ── Profile ── GET & PATCH /api/UserAccount/me ─────────────────────────────────
+// ── Profile ───────────────────────────────────────────────────────────────────
 async function loadProfile() {
   const res = await ToshkaAPI.UserAccount.getMe();
   if (res?.success && res.data) {
@@ -593,7 +566,9 @@ async function loadProfile() {
 }
 function previewProf(input) {
   const file=input.files[0]; if(!file) return;
-  const r=new FileReader(); r.onload=e=>{ const img=$('prof-img'); img.src=e.target.result; img.style.display='block'; $('prof-init').style.display='none'; }; r.readAsDataURL(file);
+  const r=new FileReader();
+  r.onload=e=>{ const img=$('prof-img'); img.src=e.target.result; img.style.display='block'; $('prof-init').style.display='none'; };
+  r.readAsDataURL(file);
 }
 async function handleSaveProfile() {
   const name=$('edit-name').value.trim(), email=$('edit-email').value.trim();
@@ -604,7 +579,8 @@ async function handleSaveProfile() {
   if (res?.success) {
     localStorage.setItem('tk_name',name);
     banner('prof-ok','✅ تم الحفظ','ok');
-    $('prof-name').textContent=$('home-greet').textContent=`أهلاً، ${name} 👋`;
+    $('prof-name').textContent = `${name}`;
+    $('home-greet').textContent = `أهلاً، ${name} 👋`;
     setTimeout(()=>banner('prof-ok','','ok'),3000);
   } else banner('prof-err',mapError(res));
 }
@@ -615,13 +591,17 @@ async function handleChangePass() {
   setLoad('btn-chpass',true);
   const res = await ToshkaAPI.UserAccount.changePassword({ currentPassword:cur, newPassword:nw });
   setLoad('btn-chpass',false);
-  if (res?.success) { $('old-pass').value=''; $('new-pass').value=''; banner('pass-ok','✅ تم تغيير الباسورد','ok'); setTimeout(()=>banner('pass-ok','','ok'),3000); }
-  else banner('pass-err',mapError(res));
+  if (res?.success) {
+    $('old-pass').value=''; $('new-pass').value='';
+    banner('pass-ok','✅ تم تغيير الباسورد','ok');
+    setTimeout(()=>banner('pass-ok','','ok'),3000);
+  } else banner('pass-err',mapError(res));
 }
 
-// ── Notifications ── GET /api/Notifications ────────────────────────────────────
+// ── Notifications ──────────────────────────────────────────────────────────────
 async function openNotifs() {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $('s-notif').classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $('s-notif').classList.add('active');
   loadNotifs(); ToshkaAPI.Notifications.markAllRead(); $('notif-dot').style.display='none';
 }
 async function loadNotifs() {
@@ -631,7 +611,7 @@ async function loadNotifs() {
     const items=res.data.items;
     if (!items.length) { list.innerHTML='<div class="empty"><div class="empty-icon">🔔</div><div class="empty-txt">لا توجد إشعارات</div></div>'; return; }
     list.innerHTML=items.map(n=>`<div class="notif-card${n.isRead?'':' notif-unread'}">
-      <div style="width:36px;height:36px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${n.isRead?'🔔':'🔔'}</div>
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🔔</div>
       <div style="flex:1"><div style="font-size:14px;font-weight:${n.isRead?600:700};margin-bottom:2px">${n.title??''}</div>
       <div style="font-size:12px;color:var(--gray)">${n.body??''}</div>
       <div style="font-size:11px;color:var(--gray2);margin-top:3px">${n.createdAt?new Date(n.createdAt).toLocaleString('ar-EG'):''}</div></div>
@@ -639,7 +619,10 @@ async function loadNotifs() {
     if (items.some(n=>!n.isRead)) $('notif-dot').style.display='block';
   } else list.innerHTML='<div class="empty"><div class="empty-icon">🔔</div><div class="empty-txt">لا توجد إشعارات</div></div>';
 }
-async function markAllRead() { await ToshkaAPI.Notifications.markAllRead(); $('notif-dot').style.display='none'; toast('✅ تم تعليم كل الإشعارات'); loadNotifs(); }
+async function markAllRead() {
+  await ToshkaAPI.Notifications.markAllRead();
+  $('notif-dot').style.display='none'; toast('✅ تم تعليم كل الإشعارات'); loadNotifs();
+}
 
 function handleLogout() {
   if (!confirm('تأكيد تسجيل الخروج؟')) return;
@@ -650,13 +633,11 @@ function handleLogout() {
 async function initSignalR() {
   hub
     .on('PositionUpdated', data => {
-      // data = { position, peopleBefore }
       if (!myBooking) return;
       myBooking.peopleBefore = data.peopleBefore ?? (data.position - 1);
-      // لا نكتب فوق الـ UI لو العميل شغال بالفعل
-      const isServing = myBooking.status === 1 || myBooking.status === 'InService' || myBooking.status === 'Serving';
-      if (!isServing) {
-        $('my-pos-txt').textContent = `أنت رقم ${myBooking.peopleBefore + 1} في الانتظار`;
+      const st = normSt(myBooking.status);
+      if (st !== 1) {
+        $('my-pos-txt').textContent = `أنت رقم ${myBooking.peopleBefore+1} في الانتظار`;
         $('step2-sub').textContent  = `${myBooking.peopleBefore} شخص قبلك`;
         $('step2-dot').textContent  = myBooking.peopleBefore > 0 ? String(myBooking.peopleBefore) : '⏳';
         updateBookingBand();
@@ -664,49 +645,39 @@ async function initSignalR() {
       }
     })
     .on('QueueUpdated', async () => {
-      // تحديث قائمة الحلاقين → حالة الحلاق تتغير real-time عند العميل
       loadBarbers();
-
       if (!myBooking) return;
-
       const prevStatus = myBooking.status;
       const prevEntry  = myBooking.queueEntryId ?? myBooking.id;
       const prevBarId  = myBooking.barberId;
-
       await checkMyPosition();
-
-      // ── خلصت الخدمة: API رجع null بعد ما كانت في حالة نشطة ─────────────
-      if (!myBooking && (prevStatus === 0 || prevStatus === 1)) {
+      // API رجع null = الخدمة خلصت
+      if (!myBooking && (normSt(prevStatus) === 0 || normSt(prevStatus) === 1)) {
         ratingEntry = prevEntry;
         if (prevBarId) hub.leaveBarberGroup(prevBarId);
         toast('🎉 تمت خدمتك! قيّم تجربتك');
-        setTimeout(() => showRating(), 600);
+        setTimeout(()=>showRating(), 600);
         return;
       }
-
-      // ── status بقى Done مباشرة ──────────────────────────────────────────
-      if (myBooking?.status === 2 && prevStatus !== 2) {
+      // status بقى Done
+      if (normSt(myBooking?.status) === 2 && normSt(prevStatus) !== 2) {
         ratingEntry = myBooking.queueEntryId ?? myBooking.id;
         if (myBooking.barberId) hub.leaveBarberGroup(myBooking.barberId);
         myBooking = null;
         toast('🎉 تمت خدمتك! قيّم تجربتك');
-        setTimeout(() => showRating(), 600);
+        setTimeout(()=>showRating(), 600);
         return;
       }
-
-      // تحديث عادي (وضع في الصف تغيّر)
       loadMyQueue();
     })
     .on('reconnected', async () => {
-      setRtDot(true);
-      setRtDot(true, 'rt-dot-q');
-      if (S.userId)             hub.joinUserGroup(S.userId);
-      if (myBooking?.barberId)  hub.joinBarberGroup(myBooking.barberId);
+      setRtDot(true); setRtDot(true,'rt-dot-q');
+      if (S.userId)            hub.joinUserGroup(S.userId);
+      if (myBooking?.barberId) hub.joinBarberGroup(myBooking.barberId);
     });
 
   await hub.connect();
-  setRtDot(true);
-  setRtDot(true, 'rt-dot-q');
+  setRtDot(true); setRtDot(true,'rt-dot-q');
   if (S.userId)            await hub.joinUserGroup(S.userId);
   if (myBooking?.barberId) await hub.joinBarberGroup(myBooking.barberId);
 }
@@ -714,10 +685,9 @@ async function initSignalR() {
 // ── Init ───────────────────────────────────────────────────────────────────────
 $('home-greet').textContent = `أهلاً، ${S.name} 👋`;
 loadBarbers();
-// نجلب الحجز النشط أولاً (await) ثم نبني الـ SignalR عشان يقدر ينضم للـ group الصح
 (async () => {
   await checkMyPosition();
-  initSignalR().catch(() => { setRtDot(false); setRtDot(false, 'rt-dot-q'); });
+  initSignalR().catch(()=>{ setRtDot(false); setRtDot(false,'rt-dot-q'); });
 })();
 </script>
 </body>

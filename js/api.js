@@ -54,6 +54,12 @@ async function https(method, path, body) {
   if (t) h['Authorization'] = `Bearer ${t}`;
   try {
     const res  = await fetch(API_BASE + path, { method, headers:h, body: body ? JSON.stringify(body) : undefined });
+    if (res.status === 401) {
+      Session.clear();
+      const inApps = window.location.pathname.includes('/apps/');
+      window.location.href = inApps ? '../index.html' : 'index.html';
+      return { success:false, message:'Unauthorized' };
+    }
     const text = await res.text();
     let d; try { d = JSON.parse(text); } catch { d = { success:res.ok, message:text }; }
     if (typeof d === 'object' && d !== null && 'success' in d) return d;
