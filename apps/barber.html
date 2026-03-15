@@ -33,8 +33,8 @@
     <!-- حالة الحلاق -->
     <div class="status-row" id="status-row">
       <button class="stbtn s0" data-v="0" onclick="handleStatus(this)">🟢 متاح</button>
-      <button class="stbtn"    data-v="1" onclick="handleStatus(this)">🟡 مشغول</button>
-      <button class="stbtn"    data-v="2" onclick="handleStatus(this)">🔴 استراحة</button>
+      <button class="stbtn"    data-v="1" onclick="handleStatus(this)">🟡 استراحة</button>
+      <button class="stbtn"    data-v="2" onclick="handleStatus(this)">🔴 مغلق</button>
     </div>
 
     <!-- ملخص الصف -->
@@ -138,8 +138,8 @@
       <div class="sec-title" style="margin-bottom:14px">حالة العمل</div>
       <div class="status-row" id="profile-status-row">
         <button class="stbtn s0" data-v="0" onclick="handleStatusProfile(this)">🟢 متاح</button>
-        <button class="stbtn"    data-v="1" onclick="handleStatusProfile(this)">🟡 مشغول</button>
-        <button class="stbtn"    data-v="2" onclick="handleStatusProfile(this)">🔴 استراحة</button>
+        <button class="stbtn"    data-v="1" onclick="handleStatusProfile(this)">🟡 استراحة</button>
+        <button class="stbtn"    data-v="2" onclick="handleStatusProfile(this)">🔴 مغلق</button>
       </div>
       <div class="banner b-ok" id="status-ok"></div>
     </div>
@@ -190,13 +190,13 @@ async function handleStatus(btn) {
   setStatusUI(val, 'status-row');
   const res = await ToshkaAPI.BarberAccount.setStatus(val);
   if (!res?.success) toast('⚠️ فشل تحديث الحالة');
-  else { toast(['🟢 متاح الآن','🟡 مشغول','🔴 استراحة'][val]); setStatusUI(val,'profile-status-row'); }
+  else { toast(['🟢 متاح الآن','🟡 استراحة','🔴 مغلق'][val]); setStatusUI(val,'profile-status-row'); }
 }
 async function handleStatusProfile(btn) {
   const val = +btn.dataset.v;
   setStatusUI(val,'profile-status-row');
   const res = await ToshkaAPI.BarberAccount.setStatus(val);
-  if (res?.success) { toast(['🟢 متاح الآن','🟡 مشغول','🔴 استراحة'][val]); banner('status-ok','✅ تم تحديث الحالة','ok'); setStatusUI(val,'status-row'); }
+  if (res?.success) { toast(['🟢 متاح الآن','🟡 استراحة','🔴 مغلق'][val]); banner('status-ok','✅ تم تحديث الحالة','ok'); setStatusUI(val,'status-row'); }
 }
 function setStatusUI(val, rowId) {
   document.querySelectorAll(`#${rowId} .stbtn`).forEach((b,i)=>{b.className='stbtn';if(i===val)b.classList.add(`s${val}`);});

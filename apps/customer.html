@@ -420,7 +420,7 @@ function updateBookingBand() {
   if (!band) return;
   if (!myBooking) { band.style.display='none'; return; }
   band.style.display = 'flex';
-  $('band-num').textContent = myBooking.queueNumber ?? myBooking.position ?? '—';
+  $('band-num').textContent = myBooking.position ?? myBooking.position ?? '—';
   const st = normSt(myBooking.status);
   $('band-sub').textContent =
     st === 1 ? '✂️ جاري خدمتك الآن' :
@@ -452,7 +452,7 @@ function loadMyQueue() {
   $('q-active').style.display = 'block';
   $('q-rate').style.display   = 'none';
 
-  $('my-qnum').textContent       = myBooking.queueNumber ?? myBooking.position ?? ((myBooking.peopleBefore??0)+1);
+  $('my-qnum').textContent       = myBooking.position ?? myBooking.position ?? ((myBooking.peopleBefore??0)+1);
   $('my-barber-txt').textContent = `مع الحلاق: ${myBooking.barberName??'—'}`;
   $('step1-t').textContent       = myBooking.createdAt
     ? new Date(myBooking.createdAt).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) : '—';
