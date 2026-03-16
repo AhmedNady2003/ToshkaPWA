@@ -1,11 +1,11 @@
 /**
- * Toshka Barber — API Client v2
- * Swagger v2 + SignalR QueueHub
+ * Toshka Barber — API Client v3
+ * Flow: send-otp → verify-otp → complete-profile (if new)
  */
 
 const API_BASE = 'https://toshka.runasp.net';
 
-// ─── Enums ─────────────────────────────────────────────────────────────────────
+// ─── Enums ────────────────────────────────────────────────────────────────────
 const BarberStatus = {
   Available: 0, Busy: 1, Break: 2,
   label: { 0:'متاح', 1:'مشغول', 2:'استراحة' },
@@ -17,15 +17,17 @@ const BookingType = {
 };
 const DevicePlatform = { Unknown:0, Android:1, iOS:2 };
 
-// ─── Session ───────────────────────────────────────────────────────────────────
+// ─── Session ──────────────────────────────────────────────────────────────────
 const Session = {
   save(d) {
-    localStorage.setItem('tk_token',  d.accessToken  ?? '');
-    localStorage.setItem('tk_name',   d.fullName     ?? '');
-    localStorage.setItem('tk_phone',  d.phoneNumber  ?? '');
-    localStorage.setItem('tk_role',   d.role         ?? '');
-    localStorage.setItem('tk_uid',    d.userId       ?? d.id ?? '');
-    localStorage.setItem('tk_bid',    d.barberId     ?? '');
+    // يقبل res مباشرة (accessToken في الـ root أو في data)
+    const src = d.data ?? d;
+    localStorage.setItem('tk_token',  src.accessToken  ?? '');
+    localStorage.setItem('tk_name',   src.fullName     ?? '');
+    localStorage.setItem('tk_phone',  src.phoneNumber  ?? '');
+    localStorage.setItem('tk_role',   src.role         ?? '');
+    localStorage.setItem('tk_uid',    src.userId       ?? src.id ?? '');
+    localStorage.setItem('tk_bid',    src.barberId     ?? '');
   },
   get() {
     return {
@@ -37,9 +39,12 @@ const Session = {
       barberId: localStorage.getItem('tk_bid')    || '',
     };
   },
-  clear() { ['tk_token','tk_name','tk_phone','tk_role','tk_uid','tk_bid'].forEach(k=>localStorage.removeItem(k)); },
+  clear() {
+    ['tk_token','tk_name','tk_phone','tk_role','tk_uid','tk_bid']
+      .forEach(k => localStorage.removeItem(k));
+  },
   isLoggedIn() { return !!localStorage.getItem('tk_token'); },
-  roleRoute()  {
+  roleRoute() {
     const r = localStorage.getItem('tk_role') ?? '';
     const inApps = window.location.pathname.includes('/apps/');
     if (inApps) return r==='Admin'?'admin.html':r==='Barber'?'barber.html':'customer.html';
@@ -47,34 +52,48 @@ const Session = {
   }
 };
 
-// ─── https ──────────────────────────────────────────────────────────────────────
+// ─── HTTP ─────────────────────────────────────────────────────────────────────
 async function https(method, path, body) {
-  const h = { 'Content-Type':'application/json' };
+  const h = { 'Content-Type': 'application/json' };
   const t = Session.get().token;
   if (t) h['Authorization'] = `Bearer ${t}`;
   try {
-    const res  = await fetch(API_BASE + path, { method, headers:h, body: body ? JSON.stringify(body) : undefined });
+    const res = await fetch(API_BASE + path, {
+      method, headers: h,
+      body: body ? JSON.stringify(body) : undefined
+    });
+    // توكن منتهي → رجّع لصفحة الدخول
     if (res.status === 401) {
       Session.clear();
       const inApps = window.location.pathname.includes('/apps/');
       window.location.href = inApps ? '../index.html' : 'index.html';
-      return { success:false, message:'Unauthorized' };
+      return { success: false, message: 'Unauthorized' };
     }
     const text = await res.text();
-    let d; try { d = JSON.parse(text); } catch { d = { success:res.ok, message:text }; }
+    let d; try { d = JSON.parse(text); } catch { d = { success: res.ok, message: text }; }
     if (typeof d === 'object' && d !== null && 'success' in d) return d;
-    return { success:res.ok, data:d, message: res.ok ? null : (d?.message ?? 'خطأ') };
-  } catch { return { success:false, message:'networkError' }; }
+    return { success: res.ok, data: d, message: res.ok ? null : (d?.message ?? 'خطأ') };
+  } catch { return { success: false, message: 'networkError' }; }
 }
 
-// ─── Auth ──────────────────────────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 const Auth = {
-  sendOtp:  phone => https('POST', '/api/Auth/send-otp', { phoneNumber:phone }),
-  register: body  => https('POST', '/api/Auth/register', body),
-  login:    body  => https('POST', '/api/Auth/login',    body),
+  // الخطوة 1: إرسال OTP
+  sendOtp: phone =>
+    https('POST', '/api/Auth/send-otp', { phoneNumber: phone }),
+
+  // الخطوة 2: التحقق من OTP
+  // Response A (عنده حساب): { success, exists:true,  accessToken, fullName, role, ... }
+  // Response B (جديد):      { success, exists:false, tempToken }
+  verifyOtp: (phone, code) =>
+    https('POST', '/api/Auth/verify-otp', { phoneNumber: phone, otpCode: code }),
+
+  // الخطوة 3: استكمال البيانات (للجدد فقط)
+  completeProfile: body =>
+    https('POST', '/api/Auth/complete-profile', body),
 };
 
-// ─── UserAccount ───────────────────────────────────────────────────────────────
+// ─── UserAccount ──────────────────────────────────────────────────────────────
 const UserAccount = {
   create:         body => https('POST',  '/api/UserAccount', body),
   getMe:          ()   => https('GET',   '/api/UserAccount/me'),
@@ -82,13 +101,13 @@ const UserAccount = {
   changePassword: body => https('PATCH', '/api/UserAccount/me/change-password', body),
 };
 
-// ─── BarberAccount (GET + status only — no PATCH me) ───────────────────────────
+// ─── BarberAccount ────────────────────────────────────────────────────────────
 const BarberAccount = {
   getMe:     ()     => https('GET',   '/api/BarberAccount/me'),
   setStatus: status => https('PATCH', '/api/BarberAccount/me/status', { status }),
 };
 
-// ─── Barbers (admin CRUD) ─────────────────────────────────────────────────────
+// ─── Barbers ──────────────────────────────────────────────────────────────────
 const Barbers = {
   getAll:  ()   => https('GET',    '/api/Barbers'),
   getById: id   => https('GET',    `/api/Barbers/${id}`),
@@ -101,8 +120,8 @@ const Queue = {
   book:         body => https('POST', '/api/Queue/book', body),
   getEntries:   ()   => https('GET',  '/api/Queue/queue-entries'),
   myPosition:   ()   => https('GET',  '/api/Queue/my-position'),
-  serveNext:    ()   => https('POST', '/api/Queue/barber/serve-next'),          // no barberId
-  cancel:       ()   => https('POST', '/api/Queue/cancel'),                     // no entryId – uses JWT
+  serveNext:    ()   => https('POST', '/api/Queue/barber/serve-next'),
+  cancel:       ()   => https('POST', '/api/Queue/cancel'),
   markDone:     id   => https('POST', `/api/Queue/${id}/mark-as-done`),
   addToService: id   => https('POST', `/api/Queue/${id}/add-to-service`),
   moveBack:     id   => https('POST', `/api/Queue/${id}/move-back`),
@@ -129,58 +148,34 @@ const Admin = {
 // ─── SignalR Hub ──────────────────────────────────────────────────────────────
 class QueueSignalR {
   constructor() { this._conn = null; this._handlers = {}; }
-
   on(event, fn) { this._handlers[event] = fn; return this; }
-
   async connect() {
     if (typeof signalR === 'undefined') return console.warn('SignalR not loaded');
     if (this._conn) return;
     this._conn = new signalR.HubConnectionBuilder()
-      .withUrl(`${API_BASE}/hubs/queue`, {
-        accessTokenFactory: () => Session.get().token,
-        skipNegotiation: false,
-      })
+      .withUrl(`${API_BASE}/hubs/queue`, { accessTokenFactory: () => Session.get().token })
       .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
       .configureLogging(signalR.LogLevel.Warning)
       .build();
-
-    // Wire up events
     this._conn.on('QueueUpdated',    (...a) => this._handlers['QueueUpdated']?.(...a));
     this._conn.on('PositionUpdated', (...a) => this._handlers['PositionUpdated']?.(...a));
-
-    this._conn.onreconnected(() => {
-      console.log('[SignalR] reconnected'); this._handlers['reconnected']?.();
-    });
-
-    try {
-      await this._conn.start();
-      console.log('[SignalR] connected');
-    } catch(e) { console.warn('[SignalR] connect failed', e.message); }
+    this._conn.onreconnected(() => this._handlers['reconnected']?.());
+    try { await this._conn.start(); } catch(e) { console.warn('[SignalR]', e.message); }
   }
-
-  async joinBarberGroup(barberId) {
-    try { await this._conn?.invoke('JoinBarberGroup', barberId); } catch(e) { console.warn(e); }
-  }
-  async leaveBarberGroup(barberId) {
-    try { await this._conn?.invoke('LeaveBarberGroup', barberId); } catch(e) {}
-  }
-  async joinUserGroup(userId) {
-    try { await this._conn?.invoke('JoinUserGroup', userId); } catch(e) { console.warn(e); }
-  }
-  async disconnect() {
-    try { await this._conn?.stop(); this._conn = null; } catch {}
-  }
+  async joinBarberGroup(id)  { try { await this._conn?.invoke('JoinBarberGroup', id); } catch {} }
+  async leaveBarberGroup(id) { try { await this._conn?.invoke('LeaveBarberGroup', id); } catch {} }
+  async joinUserGroup(id)    { try { await this._conn?.invoke('JoinUserGroup', id); } catch {} }
+  async disconnect()         { try { await this._conn?.stop(); this._conn = null; } catch {} }
 }
 
 // ─── Error mapper ─────────────────────────────────────────────────────────────
 function mapError(res) {
   const m = res?.message ?? '';
   const map = {
-    networkError:           'خطأ في الاتصال. تحقق من الإنترنت.',
-    PhoneAlreadyRegistered: 'رقم الهاتف مسجّل مسبقاً.',
-    InvalidCredentials:     'رقم الهاتف أو كلمة المرور غير صحيحة.',
-    OtpExpired:             'رمز التحقق منتهي الصلاحية أو غير صحيح.',
-    Unauthorized:           'غير مصرح. سجّل الدخول مجدداً.',
+    networkError:  'خطأ في الاتصال. تحقق من الإنترنت.',
+    OtpExpired:    'رمز التحقق غير صحيح أو منتهي الصلاحية. اطلب رمزاً جديداً.',
+    SessionExpired:'انتهت صلاحية الجلسة. أعد التحقق من رقمك.',
+    Unauthorized:  'غير مصرح. سجّل الدخول مجدداً.',
   };
   return map[m] || m || 'حدث خطأ، حاول مجدداً.';
 }
