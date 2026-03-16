@@ -128,7 +128,7 @@
   </div>
 
   <!-- فاضي -->
-  <div id="q-empty" style="flex:1;display:flex;flex-direction:column">
+  <div id="q-empty" style="flex:1;min-height:0;display:flex;flex-direction:column">
     <div class="empty" style="margin:auto">
       <div class="empty-icon">📋</div>
       <div class="empty-txt" style="margin-bottom:20px">ليس لديك حجز نشط حالياً</div>
@@ -139,7 +139,7 @@
   </div>
 
   <!-- نشط — BUG FIX: div مقفول صح قبل q-rate -->
-  <div id="q-active" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none">
+  <div id="q-active" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none">
     <div class="pad" style="padding-top:4px">
       <div class="q-hero">
         <div class="q-ring"><div class="q-num" id="my-qnum">—</div></div>
@@ -191,7 +191,7 @@
   </div><!-- /q-active ← BUG FIX: كان ناقص هنا -->
 
   <!-- تقييم — BUG FIX: الآن خارج q-active تماماً -->
-  <div id="q-rate" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none">
+  <div id="q-rate" style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none">
     <div class="pad" style="padding-top:40px;text-align:center">
       <div style="font-size:48px;margin-bottom:14px">🎉</div>
       <h2 style="font-size:20px;font-weight:700;margin-bottom:8px">تمت خدمتك!</h2>
