@@ -29,24 +29,27 @@ body{
   background:linear-gradient(90deg,transparent,var(--gold),transparent)}
 
 /* Shell */
-#app{height:100%;height:100dvh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden}
+#app{height:100%;height:100dvh;max-width:430px;margin:0 auto;display:flex;flex-direction:column;position:relative}
 #app>*{position:relative;z-index:1}
 
 /* Screens */
 .screen{display:none;flex-direction:column;animation:fadeUp .28s ease both}
 .screen.active{
   display:flex;
-  /* الحل الشامل للـ viewport height على كل التليفونات */
+  /* viewport height — compatible with all phones */
   height:100vh;
   height:100dvh;
   height:-webkit-fill-available;
-  max-height:100vh;max-height:100dvh;
+  max-height:100vh;
+  max-height:100dvh;
   overflow:hidden;
+  /* منع الـ content من الفيضان */
+  contain:layout;
 }
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
 /* TopNav */
-.topnav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:52px 20px 14px;direction:rtl}
+.topnav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:max(env(safe-area-inset-top,20px)+16px,36px) 20px 14px;direction:rtl}
 .topnav-left{display:flex;flex-direction:column}
 .topnav-title{font-family:'Playfair Display',serif;font-style:italic;font-size:19px;color:var(--gold)}
 .topnav-sub{font-size:12px;color:var(--gray);margin-top:2px}

@@ -1,5 +1,5 @@
 /**
- * Toshka Barber — API Client v3
+ * Toshka Salon — API Client v3
  * Flow: send-otp → verify-otp → complete-profile (if new)
  */
 
@@ -7,8 +7,9 @@ const API_BASE = 'https://toshka.runasp.net';
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 const BarberStatus = {
-  Available: 0, Busy: 1, Break: 2,
-  label: { 0:'متاح', 1:'مشغول', 2:'استراحة' },
+  Available: 0, Break: 1, Closed: 2,
+  // Backend: 0=Available, 1=Break(استراحة), 2=NotAvailable(مغلق)
+  label: { 0:'متاح', 1:'استراحة', 2:'مغلق' },
   css:   { 0:'st-avail', 1:'st-busy', 2:'st-break' }
 };
 const BookingType = {
@@ -125,6 +126,7 @@ const Queue = {
   markDone:     id   => https('POST', `/api/Queue/${id}/mark-as-done`),
   addToService: id   => https('POST', `/api/Queue/${id}/add-to-service`),
   moveBack:     id   => https('POST', `/api/Queue/${id}/move-back`),
+  addWalkIn:    body => https('POST', '/api/Queue/add-book', body),
 };
 
 // ─── Ratings ──────────────────────────────────────────────────────────────────

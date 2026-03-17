@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Toshka Barber"/>
+<meta name="apple-mobile-web-app-title" content="Toshka Salon"/>
 <title>Toshka — العميل</title>
 <link rel="stylesheet" href="../css/app.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
@@ -223,7 +223,7 @@
 <!-- ══════════════════════════ PROFILE ══════════════════════════ -->
 <div class="screen" id="s-profile">
   <div class="topnav">
-    <div class="logo">Toshka <span>Barber</span></div>
+    <div class="logo">Toshka <span>Salon</span></div>
     <button class="nav-btn" onclick="handleLogout()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
@@ -453,7 +453,7 @@ function loadMyQueue() {
   $('q-rate').style.display   = 'none';
 
   $('my-qnum').textContent       = myBooking.position ?? myBooking.position ?? ((myBooking.peopleBefore??0)+1);
-  $('my-barber-txt').textContent = `مع الحلاق: ${myBooking.barberName??'—'}`;
+  $('my-barber-txt').textContent = `مع: ${myBooking.barberName??'—'}`;
   $('step1-t').textContent       = myBooking.createdAt
     ? new Date(myBooking.createdAt).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}) : '—';
 
@@ -643,6 +643,10 @@ async function initSignalR() {
         updateBookingBand();
         if (myBooking.peopleBefore === 0) toast('⚡ دورك اتقرّب! استعد');
       }
+    })
+    .on('BarberStatusUpdated', async () => {
+      // حالة الحلاق اتغيرت → حدّث قائمة الحلاقين فوراً
+      await loadBarbers();
     })
     .on('QueueUpdated', async () => {
       loadBarbers();
