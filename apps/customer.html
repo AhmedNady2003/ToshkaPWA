@@ -343,7 +343,7 @@ function renderBarbers() {
   const el = $('barbers-list');
   if (!barbers.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🪑</div><div class="empty-txt">لا يوجد حلاقين متاحين</div></div>'; return; }
   el.innerHTML = barbers.map(b=>{
-    const stCss = BarberStatus.css[b.status] ?? 'st-break';
+    const stCss = BarberStatus.css[b.status] ?? 'st-offline';
     const stLbl = BarberStatus.label[b.status] ?? '—';
     const stars = Math.round(b.averageRating ?? 0);
     return `<div class="card" style="cursor:pointer;margin-bottom:10px" onclick='openBarber(${JSON.stringify({id:b.id,name:b.name,status:b.status,averageRating:b.averageRating,totalRatings:b.totalRatings,waitingCount:b.waitingCount})})'>
@@ -372,7 +372,7 @@ function openBarber(b) {
   $('det-b-name').textContent = b.name;
   $('det-name').textContent   = b.name;
   const badge = $('det-badge');
-  badge.className  = `sbadge ${BarberStatus.css[b.status]??'st-break'}`;
+  badge.className  = `sbadge ${BarberStatus.css[b.status]??'st-offline'}`;
   badge.textContent = BarberStatus.label[b.status]??'—';
   $('det-stars').textContent      = '⭐'.repeat(Math.round(b.averageRating??0));
   $('det-rating-lbl').textContent = `${(b.averageRating??0).toFixed(1)} · ${b.totalRatings??0} تقييم`;
