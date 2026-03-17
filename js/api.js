@@ -10,7 +10,7 @@ const BarberStatus = {
   Available: 0, Break: 1, Closed: 2,
   // Backend: 0=Available, 1=Break(استراحة), 2=NotAvailable(مغلق)
   label: { 0:'متاح', 1:'استراحة', 2:'مغلق' },
-  css:   { 0:'st-avail', 1:'st-break', 2:'st-offline' }
+  css:   { 0:'st-avail', 1:'st-break', 2:'st-offlin' }
 };
 const BookingType = {
   Normal: 0, Vip: 1,
