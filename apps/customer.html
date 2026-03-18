@@ -624,10 +624,10 @@ async function markAllRead() {
   $('notif-dot').style.display='none'; toast('✅ تم تعليم كل الإشعارات'); loadNotifs();
 }
 
-function handleLogout() {
-  if (!confirm('تأكيد تسجيل الخروج؟')) return;
-  hub.disconnect(); Session.clear(); window.location.href='../index.html';
-}
+// function handleLogout() {
+//  if (!confirm('تأكيد تسجيل الخروج؟')) return;
+//  hub.disconnect(); Session.clear(); window.location.href='../index.html';
+//}
 
 // ── SignalR ────────────────────────────────────────────────────────────────────
 async function initSignalR() {
