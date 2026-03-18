@@ -134,18 +134,23 @@ async function handleSendOtp() {
   state.phone = phone;
   setLoading('btn-send-otp', true);
 
-  const res = await ToshkaAPI.Auth.sendOtp(phone);
+  // ── DEV MODE: تخطي الـ OTP وإرسال 000000 تلقائياً ──────────────────────
+  const res = await ToshkaAPI.Auth.verifyOtp(phone, '000000');
   setLoading('btn-send-otp', false);
 
-  if (res?.success) {
-    // أظهر الرقم في الـ hint
-    $('otp-hint-txt').textContent =
-      `أدخل الرمز المكوّن من 6 أرقام المرسل إلى ${phone}`;
-    showScreen('screen-otp');
-    startResendTimer();
-    setTimeout(() => $$('.otp-input')[0]?.focus(), 300);
-  } else {
+  if (!res?.success) {
     showError('phone-error', mapError(res));
+    return;
+  }
+
+  if (res.exists) {
+    Session.save(res);
+    showToast('✅ مرحباً بعودتك!');
+    setTimeout(() => window.location.href = Session.roleRoute(), 700);
+  } else {
+    state.tempToken = res.tempToken;
+    showScreen('screen-profile');
+    setTimeout(() => $('profile-name')?.focus(), 300);
   }
 }
 
