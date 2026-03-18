@@ -127,6 +127,7 @@ const Queue = {
   addToService: id   => https('POST', `/api/Queue/${id}/add-to-service`),
   moveBack:     id   => https('POST', `/api/Queue/${id}/move-back`),
   addWalkIn:    body => https('POST', '/api/Queue/add-book', body),
+  removeBook:   body => https('DELETE', '/api/Queue/remove-book', body),
 };
 
 // ─── Ratings ──────────────────────────────────────────────────────────────────
