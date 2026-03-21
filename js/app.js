@@ -123,34 +123,57 @@ function initPhoto() {
   });
 }
 
-// ── STEP 1: إرسال OTP ─────────────────────────────────────────────────────────
 async function handleSendOtp() {
   clearError('phone-error');
+
   const phone = $('phone-input').value.trim();
+
   if (!isValidPhone(phone)) {
     showError('phone-error', 'أدخل رقم موبايل مصري صحيح (01x xxxx xxxx)');
     return;
   }
+
   state.phone = phone;
   setLoading('btn-send-otp', true);
 
-  // ── DEV MODE: تخطي الـ OTP وإرسال 000000 تلقائياً ──────────────────────
-  const res = await ToshkaAPI.Auth.verifyOtp(phone, '000000');
-  setLoading('btn-send-otp', false);
+  try {
+    // ── 1. جرب OTP تلقائي ───────────────────────────────
+    const autoRes = await ToshkaAPI.Auth.verifyOtp(phone, '000000');
 
-  if (!res?.success) {
-    showError('phone-error', mapError(res));
-    return;
-  }
+    if (autoRes?.success) {
+      setLoading('btn-send-otp', false);
 
-  if (res.exists) {
-    Session.save(res);
-    showToast('✅ مرحباً بعودتك!');
-    setTimeout(() => window.location.href = Session.roleRoute(), 700);
-  } else {
-    state.tempToken = res.tempToken;
-    showScreen('screen-profile');
-    setTimeout(() => $('profile-name')?.focus(), 300);
+      if (autoRes.exists) {
+        Session.save(autoRes);
+        showToast('✅ مرحباً بعودتك!');
+        setTimeout(() => window.location.href = Session.roleRoute(), 700);
+        return;
+      } else {
+        state.tempToken = autoRes.tempToken;
+        showScreen('screen-profile');
+        setTimeout(() => $('profile-name')?.focus(), 300);
+        return;
+      }
+    }
+
+    // ── 2. لو فشل → ابعت OTP حقيقي ─────────────────────
+    const sendRes = await ToshkaAPI.Auth.sendOtp(phone);
+
+    setLoading('btn-send-otp', false);
+
+    if (!sendRes?.success) {
+      showError('phone-error', mapError(sendRes));
+      return;
+    }
+
+    // ── 3. وديه شاشة OTP ───────────────────────────────
+    showScreen('screen-otp');
+    startResendTimer();
+    clearOtpBoxes();
+
+  } catch (err) {
+    setLoading('btn-send-otp', false);
+    showError('phone-error', 'حدث خطأ، حاول مرة أخرى');
   }
 }
 
